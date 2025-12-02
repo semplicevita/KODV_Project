@@ -1,0 +1,5 @@
+/* 전체 폰트 설정 */
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #f8f9fa; /* 아주 연한 회색 배경 */
+}

@@ -1,0 +1,17 @@
+# 1. 파이썬 관련 (가상환경, 캐시)
+__pycache__/
+venv/
+*.pyc
+
+# 2. 보안 및 설정 (절대 공개 금지)
+.env
+.DS_Store
+
+# 3. 실행 파일 및 라이브러리 (용량 큼)
+*.jar
+*.exe
+
+# 4. BlazeGraph 데이터베이스 및 로그 (★ 중요!)
+*.jnl
+*.log
+rules.log
