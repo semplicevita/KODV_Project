@@ -15,3 +15,6 @@ venv/
 *.jnl
 *.log
 rules.log
+
+# 5. Azure SSH Key 
+*.pem
