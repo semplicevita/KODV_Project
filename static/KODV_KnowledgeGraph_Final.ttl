@@ -266,6 +266,7 @@ kodv:vulnerabilityRating a owl:ObjectProperty ;
 kodvid:RatingScale a skos:OrderedCollection ;
     skos:prefLabel "가뭄 취약성 등급 척도"@ko ;
     skos:definition "가뭄 취약성 정도를 나타내는 5단계 등급 체계"@ko ;
+    skos:inScheme kodvid:DroughtVulnerabilityScheme ;
     skos:memberList ( kodvid:Rating_I
                       kodvid:Rating_II
                       kodvid:Rating_III
