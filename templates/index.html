@@ -1458,7 +1458,7 @@ LIMIT 5</textarea>
                     var targetCenter = targetBounds.getCenter();
 
                     // 레벨별 적정 줌 제한 (시도는 멀리, 읍면동은 가까이)
-                    var maxZoomLimit = (firstCode.length === 2) ? 8 : (firstCode.length === 5) ? 10 : 11;
+                    var maxZoomLimit = (firstCode.length === 2) ? 8 : (firstCode.length === 5) ? 9 : 11;
 
                     var targetZoom = map.getBoundsZoom(targetBounds, false, [50, 50]);
                     if (targetZoom > maxZoomLimit) targetZoom = maxZoomLimit;
@@ -1476,34 +1476,41 @@ LIMIT 5</textarea>
         }
     }
 
-    // [신규] 리스트 클릭 시 이동 함수 (유지)
-    function moveToRegion(targetCode) {
-        if (!window.highlightLayer) {
-            console.log("하이라이트 레이어가 없습니다.");
-            return;
-        }
+    // [수정] 리스트 클릭 시 이동 함수 (레벨별 줌 적용)
+        function moveToRegion(targetCode) {
+            if (!window.highlightLayer) return;
 
-        var foundLayer = null;
-        window.highlightLayer.eachLayer(function (layer) {
-            if (layer.regionCode === targetCode) {
-                foundLayer = layer;
+            var foundLayer = null;
+            window.highlightLayer.eachLayer(function (layer) {
+                if (layer.regionCode === targetCode) {
+                    foundLayer = layer;
+                }
+            });
+
+            if (foundLayer) {
+                // 코드 길이에 따라 줌 레벨 동적 결정
+                // L1(2자리) -> 8, L2(5자리) -> 9, L3(나머지) -> 11
+                var targetZoom = 11;
+                if (targetCode.length === 2) targetZoom = 8;
+                else if (targetCode.length === 5) targetZoom = 9;
+
+                // flyTo 사용 (부드러운 이동)
+                map.flyTo(foundLayer.getBounds().getCenter(), targetZoom, {
+                    duration: 1.2,
+                    easeLinearity: 0.25
+                });
+
+                // 시각적 피드백 (반짝임)
+                var originalStyle = { color: "#dc3545", weight: 3, fillColor: "#dc3545", fillOpacity: 0.4 };
+                foundLayer.setStyle({ fillOpacity: 0.8, weight: 5, color: "#ff0000" });
+
+                setTimeout(() => {
+                    if (window.highlightLayer) foundLayer.setStyle(originalStyle);
+                }, 800);
+            } else {
+                console.log("지도에서 해당 지역을 찾을 수 없습니다.");
             }
-        });
-
-        if (foundLayer) {
-            map.fitBounds(foundLayer.getBounds(), { maxZoom: 11, animate: true, duration: 1.0 });
-
-            // 반짝임 효과
-            var originalStyle = { color: "#dc3545", weight: 3, fillColor: "#dc3545", fillOpacity: 0.4 };
-            foundLayer.setStyle({ fillOpacity: 0.8, weight: 5, color: "#ff0000" });
-
-            setTimeout(() => {
-                if (window.highlightLayer) foundLayer.setStyle(originalStyle);
-            }, 800);
-        } else {
-            console.log("지도에서 코드 [" + targetCode + "] 를 찾을 수 없습니다.");
         }
-    }
 
         function showSparqlModal() { if(!lastSparql) return; $('#sparql-code').text(lastSparql); new bootstrap.Modal(document.getElementById('sparqlModal')).show(); }
         function showHelpModal() { new bootstrap.Modal(document.getElementById('helpModal')).show(); }
