@@ -51,6 +51,27 @@
         #consoleTab .nav-link:hover {
             color: #0a58ca;
         }
+
+        /* [UX Fix Final v2] 행(Row) 호버 끄기 & 셀(Cell) 단독 호버 (우선순위 수정됨) */
+
+        /* 1. 부트스트랩의 기본 '줄 전체 색칠' 기능을 끕니다 */
+        .table-custom.table-hover tbody tr:hover > * {
+            --bs-table-accent-bg: transparent !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+
+        /* 2. 마우스가 올라간 '그 칸(td)'만 회색으로 변하게 합니다 */
+        /* 중요: 위 1번 규칙보다 우선순위를 높이기 위해 선택자를 길게 작성했습니다 */
+        .table-custom.table-hover tbody tr td:hover {
+            background-color: rgba(0, 0, 0, 0.075) !important; /* 회색 적용 */
+            transition: background-color 0.1s;
+        }
+
+        /* 3. 분류 셀(rowspan)도 이제 마우스 올리면 회색이 됩니다 (단독 동작) */
+        .table-custom tbody td[rowspan] {
+            background-color: #fff; /* 평소엔 흰색 */
+        }
     </style>
 </head>
 <body>
