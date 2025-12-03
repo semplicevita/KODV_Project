@@ -19,7 +19,7 @@ BLAZEGRAPH_URL = "http://localhost:9999/blazegraph/namespace/kb/sparql"
 sparql = SPARQLWrapper(BLAZEGRAPH_URL)
 
 # --- ★ 시스템 프롬프트 (모든 네임스페이스 반영) ---
-SYSTEM_PROMPT = SYSTEM_PROMPT = SYSTEM_PROMPT = """
+SYSTEM_PROMPT = """
 You are an expert SPARQL query generator for the 'KODV (Korea Drought Vulnerability)' Knowledge Graph.
 Convert natural language questions into valid SPARQL 1.1 queries based on the ontology below.
 
