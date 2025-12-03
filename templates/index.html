@@ -1408,19 +1408,33 @@ LIMIT 5</textarea>
         $('#ai-content').html(html);
         $('#ai-result-panel').show();
 
-        // 4. 지도 하이라이트 로직 (사용자 원본 경로 복구: emd.geojson)
+        // 4. [수정] 지도 하이라이트 로직 (동적 로딩 + getProps 활용)
         if (codes.length > 0) {
             if (window.highlightLayer) {
                 map.removeLayer(window.highlightLayer);
             }
 
-            // ★ 수정됨: 경로를 /static/emd.geojson 로 지정 (Flask 정적 폴더 기준)
-            $.getJSON("/static/emd.geojson", function (geoData) {
+            // 첫 번째 결과 코드의 길이로 레벨 판단 (모든 결과가 같은 레벨이라고 가정)
+            var firstCode = codes[0];
+            var targetGeoJson = "";
+
+            // 시도(2자리) -> sido.json / 시군구(5자리) -> sig.json / 읍면동(기타) -> emd.geojson
+            if (firstCode.length === 2) {
+                targetGeoJson = "/static/sido.json";
+            } else if (firstCode.length === 5) {
+                targetGeoJson = "/static/sig.json";
+            } else {
+                targetGeoJson = "/static/emd.geojson";
+            }
+
+            // 선택된 GeoJSON 파일 로딩
+            $.getJSON(targetGeoJson, function (geoData) {
                 var filtered = { type: "FeatureCollection", features: [] };
 
                 filtered.features = geoData.features.filter(f => {
-                    // ★ 수정됨: 사용자 데이터 속성(adm_cd2 or adm_cd) 매칭
-                    var c = String(f.properties.adm_cd2 || f.properties.adm_cd || "");
+                    // ★ 핵심: getProps 함수를 사용하여 안전하게 코드 추출
+                    var props = getProps(f);
+                    var c = String(props.code);
                     return codes.includes(c);
                 });
 
@@ -1428,41 +1442,36 @@ LIMIT 5</textarea>
                     window.highlightLayer = L.geoJson(filtered, {
                         style: { color: "#dc3545", weight: 3, fillColor: "#dc3545", fillOpacity: 0.4 },
                         onEachFeature: function (feature, layer) {
-                            // 클릭 이동을 위해 코드 심기
-                            layer.regionCode = String(feature.properties.adm_cd2 || feature.properties.adm_cd);
+                            // 여기도 getProps 사용 (클릭 이동을 위한 코드 심기)
+                            var props = getProps(feature);
+                            layer.regionCode = String(props.code);
 
-                            // (옵션) 지도 위 마우스 오버 시 툴팁
-                            if (feature.properties.emd_kor_nm) {
-                                layer.bindTooltip(feature.properties.emd_kor_nm);
+                            // 툴팁
+                            if (props.name) {
+                                layer.bindTooltip(props.name);
                             }
                         }
                     }).addTo(map);
 
-                    // [Smooth UX 최적화] 
-                    // 1. 목표 지점과 줌 레벨을 미리 계산합니다.
+                    // [Smooth UX 최적화] 이동 및 줌
                     var targetBounds = window.highlightLayer.getBounds();
                     var targetCenter = targetBounds.getCenter();
 
-                    // 지도가 해당 영역을 보여주기 위해 필요한 줌 레벨을 계산 (여백 50px 포함)
+                    // 레벨별 적정 줌 제한 (시도는 멀리, 읍면동은 가까이)
+                    var maxZoomLimit = (firstCode.length === 2) ? 8 : (firstCode.length === 5) ? 10 : 11;
+
                     var targetZoom = map.getBoundsZoom(targetBounds, false, [50, 50]);
+                    if (targetZoom > maxZoomLimit) targetZoom = maxZoomLimit;
 
-                    // 2. 줌 레벨 제한 (최대 11까지만 확대)
-                    if (targetZoom > 11) targetZoom = 11;
-
-                    // 3. 브라우저가 빨간색 영역을 그릴 시간을 0.1초 줍니다 (렉 방지 핵심!)
                     setTimeout(() => {
-                        // 4. 구글어스처럼 부드럽게 날아갑니다 (FlyTo)
-                        map.flyTo(targetCenter, targetZoom, {
-                            duration: 1.5,       // 1.5초 동안 이동 (천천히)
-                            easeLinearity: 0.25  // 곡률 (작을수록 둥글게 날아감)
-                        });
-                    }, 100); // 100ms 대기
+                        map.flyTo(targetCenter, targetZoom, { duration: 1.5, easeLinearity: 0.25 });
+                    }, 100);
 
                 } else {
-                    console.error("검색 결과 코드는 있는데, 지도에서 하나도 찾지 못했습니다.");
+                    console.error("매칭 실패: " + targetGeoJson + " 에서 코드를 찾지 못했습니다.");
                 }
             }).fail(function () {
-                console.log("GeoJSON 로드 실패: /static/emd.geojson 경로를 확인하세요.");
+                console.log("GeoJSON 로드 실패: " + targetGeoJson + " 경로를 확인하세요.");
             });
         }
     }
