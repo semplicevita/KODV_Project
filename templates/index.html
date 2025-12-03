@@ -897,7 +897,28 @@ LIMIT 5</textarea>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // 1. 지도 생성 (대한민국 중심, 축소만 제한하고 이동은 자유롭게)
+        // [설정] 데이터 속성별 라벨/단위/아이콘 매핑
+        const ATTR_MAP = {
+            // 기본 정보
+            'population': { label: '인구', unit: '명', icon: 'fa-users', color: 'primary' },
+            'waterSupplyRate': { label: '급수율', unit: '%', icon: 'fa-faucet', color: 'info' },
+            'waterSupplyPopulation': { label: '급수인구', unit: '명', icon: 'fa-user-check', color: 'info' },
+            // 노출도
+            'droughtSeverityAvg': { label: '평균가뭄심도', unit: '', icon: 'fa-sun', color: 'warning' },
+            'droughtFrequency': { label: '가뭄빈도', unit: '회', icon: 'fa-calendar-day', color: 'warning' },
+            'droughtExposureScore': { label: '노출도', unit: '점', icon: 'fa-chart-line', color: 'warning' },
+            // 민감도
+            'domesticWaterUsage': { label: '생활용수', unit: '㎥', icon: 'fa-house-chimney', color: 'success' },
+            'industrialWaterUsage': { label: '공업용수', unit: '㎥', icon: 'fa-industry', color: 'success' },
+            // 취약성 (등급은 로마자가 오지만 숫자로 올 경우 대비)
+            'vulnerabilityScore': { label: '취약성점수', unit: '점', icon: 'fa-triangle-exclamation', color: 'danger' },
+            'vulnerabilityRating': { label: '등급', unit: '', icon: 'fa-layer-group', color: 'danger' },
+            // fallback (기타)
+            'val': { label: '값', unit: '', icon: 'fa-check', color: 'secondary' },
+            'count': { label: '개수', unit: '개', icon: 'fa-list-ol', color: 'dark' }
+        };    
+        
+        //지도 생성 (대한민국 중심, 축소만 제한하고 이동은 자유롭게)
         var map = L.map('map', {
             // maxBounds 삭제: 이제 지도를 마음껏 끌어서 움직일 수 있습니다.
             minZoom: 7, // 너무 작게 축소해서 지구가 다 보이는 건 방지
@@ -1039,31 +1060,194 @@ LIMIT 5</textarea>
                 error: function(){ showLoading(false); alert("서버 오류"); }
             });
         }
-        function displayAIResults(data) {
-            var html = '<div class="list-group">'; var codes=[];
-            data.forEach(function(i){
-                var nm=i.name?i.name.value:"-"; var cd=i.code?i.code.value:""; var v=i.val?i.val.value:"";
-                if(v&&!isNaN(v)) v=Number(v).toLocaleString();
-                if(cd) codes.push(cd);
-                html+=`<div class="list-group-item d-flex justify-content-between"><div>${nm}<br><small>${cd}</small></div><span class="badge bg-primary rounded-pill h-50">${v}</span></div>`;
-            });
-            html+=`</div><div class="mt-2"><button class="btn btn-sm btn-secondary w-100" onclick="showSparqlModal()">SPARQL 보기</button></div>`;
-            $('#ai-content').html(html); $('#ai-result-panel').show();
-            // 하이라이트 로직
-            if(emdLayer && codes.length > 0) {
-                $.getJSON("{{ url_for('static', filename='emd.geojson') }}", function(geoData) {
-                    var filtered = { type:"FeatureCollection", features:[] };
-                    filtered.features = geoData.features.filter(f => {
-                        var c = String(f.properties.adm_cd2 || f.properties.adm_cd || "");
-                        return codes.includes(c);
-                    });
-                    if(filtered.features.length > 0) {
-                        highlightLayer = L.geoJson(filtered, { style: { color: "red", weight: 3, fillColor: "red", fillOpacity: 0.6 } }).addTo(map);
-                        map.fitBounds(highlightLayer.getBounds());
+
+    // [수정 v2] GeoJSON 경로 복구 및 속성 매칭 수정
+    function displayAIResults(data) {
+        var html = '<div class="list-group list-group-flush">';
+        var codes = [];
+
+        if (!data || data.length === 0) {
+            $('#ai-content').html('<div class="text-center text-muted p-3">결과가 없습니다.</div>');
+            $('#ai-result-panel').show();
+            return;
+        }
+
+        // [수정] 디버깅 로그가 추가된 지도 하이라이트 로직
+        if (codes.length > 0) {
+            if (window.highlightLayer) {
+                map.removeLayer(window.highlightLayer);
+            }
+
+            $.getJSON("/static/emd.geojson", function (geoData) {
+                var filtered = { type: "FeatureCollection", features: [] };
+
+                // 매칭된 코드들을 추적하기 위한 집합
+                var matchedCodes = new Set();
+
+                filtered.features = geoData.features.filter(f => {
+                    // GeoJSON의 코드 (여기서 adm_cd2 인지 adm_cd 인지 확인 중요)
+                    var geoCode = String(f.properties.adm_cd2 || f.properties.adm_cd || "");
+
+                    if (codes.includes(geoCode)) {
+                        matchedCodes.add(geoCode); // 매칭 성공 기록
+                        return true;
+                    }
+                    return false;
+                });
+
+                // [디버깅] 매칭 실패한 지역 콘솔에 경고 출력
+                codes.forEach(c => {
+                    if (!matchedCodes.has(c)) {
+                        console.warn(`⚠️ 매칭 실패: 검색결과 코드 [${c}]가 GeoJSON 지도 파일에 없습니다.`);
+                        console.log(`   -> 힌트: GeoJSON의 코드는 8자리인데 검색결과는 10자리일 수 있습니다.`);
                     }
                 });
-            }
+
+                if (filtered.features.length > 0) {
+                    window.highlightLayer = L.geoJson(filtered, {
+                        style: { color: "#dc3545", weight: 3, fillColor: "#dc3545", fillOpacity: 0.4 },
+                        onEachFeature: function (feature, layer) {
+                            layer.regionCode = String(feature.properties.adm_cd2 || feature.properties.adm_cd);
+                            if (feature.properties.emd_kor_nm) {
+                                layer.bindTooltip(feature.properties.emd_kor_nm);
+                            }
+                        }
+                    }).addTo(map);
+
+                    // [수정] 여기도 maxZoom 적용 (전체 뷰 잡을 때도 너무 확대되지 않게)
+                    map.fitBounds(window.highlightLayer.getBounds(), { maxZoom: 11 });
+                } else {
+                    console.error("검색 결과 코드는 있는데, 지도에서 하나도 찾지 못했습니다. (코드 포맷 확인 필요)");
+                }
+            }).fail(function () {
+                console.log("GeoJSON 로드 실패");
+            });
         }
+
+        data.forEach(function (item, index) {
+            // 1. 이름 및 코드 추출
+            // name이 없으면 region, label 순으로 찾음
+            var name = item.name ? item.name.value : (item.region ? item.region.value : (item.label ? item.label.value : "지역명 없음"));
+            var code = item.code ? item.code.value : "";
+            if (code) codes.push(code);
+
+            // 2. 속성 배지 생성
+            var badgesHtml = "";
+            Object.keys(item).forEach(function (key) {
+                // 시각화에서 제외할 메타데이터들
+                if (['name', 'region', 'label', 'code', 'geometry', 'geom'].includes(key)) return;
+
+                var val = item[key].value;
+                // ?val 처럼 일반 변수명이 오면 '값'으로 표시되지만, app.py 수정 후엔 정상 작동함
+                var mapInfo = ATTR_MAP[key] || { label: key, unit: '', icon: 'fa-tag', color: 'secondary' };
+
+                if (!isNaN(val) && val.length > 0) {
+                    if (val.indexOf('.') !== -1) val = parseFloat(val).toFixed(2);
+                    val = Number(val).toLocaleString();
+                }
+
+                badgesHtml += `
+                    <span class="badge bg-${mapInfo.color} bg-opacity-10 text-${mapInfo.color} border border-${mapInfo.color} me-1 mb-1">
+                        <i class="fa-solid ${mapInfo.icon} me-1"></i>${mapInfo.label}: ${val}${mapInfo.unit}
+                    </span>`;
+            });
+
+            // 3. 리스트 아이템 생성
+            // onclick에서 문자열 따옴표 처리를 위해 escape 주의
+            html += `
+                <a href="#" class="list-group-item list-group-item-action py-3" onclick="moveToRegion('${code}'); return false;">
+                    <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="fa-solid fa-location-dot text-danger me-2"></i>${name}
+                        </h6>
+                        <small class="text-muted font-monospace">${code}</small>
+                    </div>
+                    <div class="mt-1">
+                        ${badgesHtml}
+                    </div>
+                </a>
+            `;
+        });
+
+        html += '</div>';
+
+        // SPARQL 보기 버튼
+        html += `
+            <div class="p-3 border-top bg-light">
+                <button class="btn btn-sm btn-outline-secondary w-100" onclick="showSparqlModal()">
+                    <i class="fa-solid fa-code me-1"></i>생성된 SPARQL 보기
+                </button>
+            </div>`;
+
+        $('#ai-content').html(html);
+        $('#ai-result-panel').show();
+
+        // 4. 지도 하이라이트 로직 (사용자 원본 경로 복구: emd.geojson)
+        if (codes.length > 0) {
+            if (window.highlightLayer) {
+                map.removeLayer(window.highlightLayer);
+            }
+
+            // ★ 수정됨: 경로를 /static/emd.geojson 로 지정 (Flask 정적 폴더 기준)
+            $.getJSON("/static/emd.geojson", function (geoData) {
+                var filtered = { type: "FeatureCollection", features: [] };
+
+                filtered.features = geoData.features.filter(f => {
+                    // ★ 수정됨: 사용자 데이터 속성(adm_cd2 or adm_cd) 매칭
+                    var c = String(f.properties.adm_cd2 || f.properties.adm_cd || "");
+                    return codes.includes(c);
+                });
+
+                if (filtered.features.length > 0) {
+                    window.highlightLayer = L.geoJson(filtered, {
+                        style: { color: "#dc3545", weight: 3, fillColor: "#dc3545", fillOpacity: 0.4 },
+                        onEachFeature: function (feature, layer) {
+                            // 클릭 이동을 위해 코드 심기
+                            layer.regionCode = String(feature.properties.adm_cd2 || feature.properties.adm_cd);
+
+                            // (옵션) 지도 위 마우스 오버 시 툴팁
+                            if (feature.properties.emd_kor_nm) {
+                                layer.bindTooltip(feature.properties.emd_kor_nm);
+                            }
+                        }
+                    }).addTo(map);
+
+                    map.fitBounds(window.highlightLayer.getBounds());
+                }
+            }).fail(function () {
+                console.log("GeoJSON 로드 실패: /static/emd.geojson 경로를 확인하세요.");
+            });
+        }
+    }
+
+    // [신규] 리스트 클릭 시 이동 함수 (유지)
+    function moveToRegion(targetCode) {
+        if (!window.highlightLayer) {
+            console.log("하이라이트 레이어가 없습니다.");
+            return;
+        }
+
+        var foundLayer = null;
+        window.highlightLayer.eachLayer(function (layer) {
+            if (layer.regionCode === targetCode) {
+                foundLayer = layer;
+            }
+        });
+
+        if (foundLayer) {
+            map.fitBounds(foundLayer.getBounds(), { maxZoom: 11, animate: true, duration: 1.0 });
+
+            // 반짝임 효과
+            var originalStyle = { color: "#dc3545", weight: 3, fillColor: "#dc3545", fillOpacity: 0.4 };
+            foundLayer.setStyle({ fillOpacity: 0.8, weight: 5, color: "#ff0000" });
+
+            setTimeout(() => {
+                if (window.highlightLayer) foundLayer.setStyle(originalStyle);
+            }, 800);
+        } else {
+            console.log("지도에서 코드 [" + targetCode + "] 를 찾을 수 없습니다.");
+        }
+    }
 
         function showSparqlModal() { if(!lastSparql) return; $('#sparql-code').text(lastSparql); new bootstrap.Modal(document.getElementById('sparqlModal')).show(); }
         function showHelpModal() { new bootstrap.Modal(document.getElementById('helpModal')).show(); }
