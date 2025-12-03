@@ -127,50 +127,83 @@ def get_existing_codes():
 @app.route('/api/data/<region_code>')
 def get_region_data(region_code):
     try:
-        # 1. 로컬 DB 조회
+        # [수정 1] 로컬 DB 조회 (19종 속성 전체 + 라벨 + WikiURI)
+        # koad 관계 속성은 팝업 표출용이 아니므로 제외하여 성능 최적화
         query = f"""
-        PREFIX koad: <http://vocab.datahub.kr/def/administrative-division/>
         PREFIX kodv: <https://knowledgemap.kr/kodv/def/>
+        PREFIX kodvid: <https://knowledgemap.kr/kodv/id/>
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX owl: <http://www.w3.org/2002/07/owl#>
         PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-        PREFIX schema: <http://schema.org/>
 
-        SELECT ?label ?pop ?severity ?freq ?vulScore ?gradeLabel ?wikiURI
-        WHERE {{
+        SELECT * WHERE {{
+            # URI 생성: 사용자가 클릭한 코드로 직접 리소스 URI 바인딩
             BIND(IRI(CONCAT("https://knowledgemap.kr/kodv/id/", "{region_code}")) AS ?region)
             
+            # [기본] 이름, 위키URI
             OPTIONAL {{ ?region rdfs:label ?label . }}
             OPTIONAL {{ ?region owl:sameAs ?wikiURI . }}
-            OPTIONAL {{ ?region kodv:population ?pop . }}
+            
+            # [1] 급수 인구 정보
+            OPTIONAL {{ ?region kodv:population ?population . }}
+            OPTIONAL {{ ?region kodv:waterSupplyRate ?waterSupplyRate . }}
+            OPTIONAL {{ ?region kodv:waterSupplyPopulation ?waterSupplyPopulation . }}
+            
+            # [2] 노출도
+            OPTIONAL {{ ?region kodv:droughtSeverityAvg ?droughtSeverityAvg . }}
+            OPTIONAL {{ ?region kodv:droughtFrequency ?droughtFrequency . }}
+            OPTIONAL {{ ?region kodv:droughtExposureScore ?droughtExposureScore . }}
+            OPTIONAL {{ ?region kodv:exposureCoefficient ?exposureCoefficient . }}
+            
+            # [3] 민감도
+            OPTIONAL {{ ?region kodv:domesticWaterUsage ?domesticWaterUsage . }}
+            OPTIONAL {{ ?region kodv:industrialWaterUsage ?industrialWaterUsage . }}
+            OPTIONAL {{ ?region kodv:livingIndustrialWaterUsage ?livingIndustrialWaterUsage . }}
+            OPTIONAL {{ ?region kodv:sensitivityCoefficient ?sensitivityCoefficient . }}
+            
+            # [4] 보조수원
+            OPTIONAL {{ ?region kodv:reservoirCapacity ?reservoirCapacity . }}
+            OPTIONAL {{ ?region kodv:groundwaterAvailable ?groundwaterAvailable . }}
+            OPTIONAL {{ ?region kodv:auxWaterSourceCapacity ?auxWaterSourceCapacity . }}
+            OPTIONAL {{ ?region kodv:auxWaterSourceCoefficient ?auxWaterSourceCoefficient . }}
+            
+            # [5] 대응능력
+            OPTIONAL {{ ?region kodv:waterSupplyAvailableDays ?waterSupplyAvailableDays . }}
+            OPTIONAL {{ ?region kodv:responseCapacityCoefficient ?responseCapacityCoefficient . }}
+            
+            # [6] 취약성 (점수, 등급URI -> 라벨)
             OPTIONAL {{ ?region kodv:vulnerabilityScore ?vulScore . }}
+            OPTIONAL {{ ?region kodv:vulnerabilityRatingNumeric ?vulnerabilityRatingNumeric . }}
             OPTIONAL {{ 
-                ?region kodv:vulnerabilityRating ?gradeURI .
-                ?gradeURI skos:prefLabel ?gradeLabel . 
+                ?region kodv:vulnerabilityRating ?ratingUri .
+                ?ratingUri skos:prefLabel ?gradeLabel . 
             }}
         }} LIMIT 1
         """
+        
+        sparql = SPARQLWrapper(BLAZEGRAPH_URL) # 전역 변수 BLAZEGRAPH_URL 사용 가정
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
         local_results = sparql.query().convert()
         bindings = local_results['results']['bindings']
         
         if not bindings:
-            return jsonify({"status": "empty", "message": "데이터 없음"})
+            return jsonify({"status": "empty", "message": "해당 지역 코드의 데이터가 없습니다."})
         
         data = bindings[0]
         
-        # 2. 위키데이터 조회 (이미지 4종 세트 무작위 - 사용자님 요청 로직)
+        # [수정 2] 위키데이터 조회 (이미지 6종 파이프 연산자 검색)
         if 'wikiURI' in data:
             wiki_url = data['wikiURI']['value']
             
+            # 파이프(|) 사용: P18(이미지)|P154(로고)|P94(인장)|P41(기)|P242(지도)|P948(배너)
+            # 순서는 위키데이터가 먼저 발견하는 순서입니다.
             wiki_sparql = f"""
             PREFIX wdt: <http://www.wikidata.org/prop/direct/>
             PREFIX schema: <http://schema.org/>
             
             SELECT ?image ?desc WHERE {{
-                <{wiki_url}> wdt:P18|wdt:P154|wdt:P94|wdt:P41 ?image .
+                <{wiki_url}> wdt:P18|wdt:P154|wdt:P94|wdt:P41|wdt:P242|wdt:P948 ?image .
                 OPTIONAL {{ <{wiki_url}> schema:description ?desc . FILTER(LANG(?desc) = "ko") }}
             }} LIMIT 1
             """
@@ -179,20 +212,23 @@ def get_region_data(region_code):
                 response = requests.get(
                     "https://query.wikidata.org/sparql", 
                     params={'query': wiki_sparql, 'format': 'json'},
-                    headers={'User-Agent': 'KODV_Project_Bot/1.0'}
+                    headers={'User-Agent': 'KODV_Project_Bot/1.0'},
+                    timeout=2  # 타임아웃 2초 (응답 지연 방지)
                 )
                 if response.status_code == 200:
                     wiki_data = response.json()['results']['bindings']
                     if wiki_data:
                         if 'image' in wiki_data[0]: data['image'] = wiki_data[0]['image']
                         if 'desc' in wiki_data[0]: data['desc'] = wiki_data[0]['desc']
-            except: pass
+            except Exception as e:
+                # 위키데이터 에러는 무시하고(이미지 없이) 로컬 데이터만 반환
+                print(f"Wikidata Fetch Error: {e}")
+                pass
 
         return jsonify({"status": "success", "data": data})
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
-
 @app.route('/api/ask', methods=['POST'])
 def ask_ai():
     try:
