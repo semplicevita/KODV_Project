@@ -72,6 +72,63 @@
         .table-custom tbody td[rowspan] {
             background-color: #fff; /* 평소엔 흰색 */
         }
+
+        /* 리플렛 팝업 너비 제한 해제 (L3 더블 패널용) */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px; /* 둥글게 */
+            padding: 0; /* 패딩 제거 (내부에서 조절) */
+            overflow: hidden;
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            width: auto !important; /* 내용물에 맞춰 늘어나게 */
+            max-width: 800px !important; /* 충분히 넓게 */
+        }
+        /* [UI Fix] 팝업 닫기 버튼(X) 스타일 개선 */
+        .leaflet-popup-close-button {
+            width: 30px !important;
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 50%; /* 원형 */
+            background: white !important; /* 배경 흰색 */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* 그림자 */
+            color: #555 !important;
+            font-size: 18px !important;
+            top: -10px !important;  /* 팝업 바깥쪽 위로 살짝 뺌 */
+            right: -10px !important; /* 팝업 바깥쪽 오른쪽으로 살짝 뺌 */
+            text-align: center;
+            z-index: 2000; /* 제일 위에 표시 */
+            transition: all 0.2s;
+            text-decoration: none !important;
+        }
+        .leaflet-popup-close-button:hover {
+            background: #f8f9fa !important;
+            color: #dc3545 !important; /* 호버 시 빨간색 */
+            transform: scale(1.1);
+        }
+        
+        /* 팝업 컨텐츠 둥글기 및 오버플로우 해제 (X버튼이 밖으로 나가려면 필요) */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            padding: 0;
+            overflow: visible !important; /* X버튼이 밖으로 나갈 수 있게 */
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            width: auto !important;
+            max-width: 800px !important;
+            border-radius: 12px;
+            overflow: hidden; /* 내부 컨텐츠는 둥글게 잘림 */
+        }
+
+        /* [커스텀 등급 색상] */
+        .text-orange { color: #fd7e14 !important; }
+        .bg-orange { background-color: #fd7e14 !important; color: white; }
+        .border-orange { border-color: #fd7e14 !important; }
+
+        .text-dark-red { color: #8B0000 !important; }
+        .bg-dark-red { background-color: #8B0000 !important; color: white; }
+        .border-dark-red { border-color: #8B0000 !important; }
     </style>
 </head>
 <body>
@@ -897,26 +954,43 @@ LIMIT 5</textarea>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // [설정] 데이터 속성별 라벨/단위/아이콘 매핑
-        const ATTR_MAP = {
-            // 기본 정보
-            'population': { label: '인구', unit: '명', icon: 'fa-users', color: 'primary' },
-            'waterSupplyRate': { label: '급수율', unit: '%', icon: 'fa-faucet', color: 'info' },
-            'waterSupplyPopulation': { label: '급수인구', unit: '명', icon: 'fa-user-check', color: 'info' },
-            // 노출도
-            'droughtSeverityAvg': { label: '평균가뭄심도', unit: '', icon: 'fa-sun', color: 'warning' },
-            'droughtFrequency': { label: '가뭄빈도', unit: '회', icon: 'fa-calendar-day', color: 'warning' },
-            'droughtExposureScore': { label: '노출도', unit: '점', icon: 'fa-chart-line', color: 'warning' },
-            // 민감도
-            'domesticWaterUsage': { label: '생활용수', unit: '㎥', icon: 'fa-house-chimney', color: 'success' },
-            'industrialWaterUsage': { label: '공업용수', unit: '㎥', icon: 'fa-industry', color: 'success' },
-            // 취약성 (등급은 로마자가 오지만 숫자로 올 경우 대비)
-            'vulnerabilityScore': { label: '취약성점수', unit: '점', icon: 'fa-triangle-exclamation', color: 'danger' },
-            'vulnerabilityRating': { label: '등급', unit: '', icon: 'fa-layer-group', color: 'danger' },
-            // fallback (기타)
-            'val': { label: '값', unit: '', icon: 'fa-check', color: 'secondary' },
-            'count': { label: '개수', unit: '개', icon: 'fa-list-ol', color: 'dark' }
-        };    
+        // [설정] 데이터 속성별 라벨/단위/아이콘 매핑 (19종 전체 + 메타데이터)
+            const ATTR_MAP = {
+                // [1. 급수 인구 정보]
+                'population': { label: '인구', unit: '명', icon: 'fa-users', color: 'primary' },
+                'waterSupplyRate': { label: '급수율', unit: '%', icon: 'fa-faucet', color: 'primary' },
+                'waterSupplyPopulation': { label: '급수인구', unit: '명', icon: 'fa-user-check', color: 'primary' },
+
+                // [2. 노출도]
+                'droughtSeverityAvg': { label: '평균가뭄심도', unit: '', icon: 'fa-sun', color: 'warning' },
+                'droughtFrequency': { label: '가뭄빈도', unit: '회', icon: 'fa-calendar-day', color: 'warning' },
+                'droughtExposureScore': { label: '노출도', unit: '점', icon: 'fa-chart-line', color: 'warning' },
+                'exposureCoefficient': { label: '노출도계수', unit: '', icon: 'fa-calculator', color: 'warning' },
+
+                // [3. 민감도]
+                'domesticWaterUsage': { label: '생활용수', unit: '㎥', icon: 'fa-house-chimney', color: 'success' },
+                'industrialWaterUsage': { label: '공업용수', unit: '㎥', icon: 'fa-industry', color: 'success' },
+                'livingIndustrialWaterUsage': { label: '생·공용수', unit: '㎥', icon: 'fa-faucet-drip', color: 'success' },
+                'sensitivityCoefficient': { label: '민감도계수', unit: '', icon: 'fa-calculator', color: 'success' },
+
+                // [4. 보조수원]
+                'reservoirCapacity': { label: '저수지용량', unit: '천㎥', icon: 'fa-water', color: 'info' },
+                'groundwaterAvailable': { label: '지하수량', unit: '천㎥', icon: 'fa-arrow-up-from-bracket', color: 'info' },
+                'auxWaterSourceCapacity': { label: '보조수원능력', unit: '', icon: 'fa-hand-holding-droplet', color: 'info' },
+                'auxWaterSourceCoefficient': { label: '보조수원계수', unit: '', icon: 'fa-calculator', color: 'info' },
+
+                // [5. 대응능력]
+                'waterSupplyAvailableDays': { label: '공급가능일수', unit: '일', icon: 'fa-calendar-check', color: 'secondary' },
+                'responseCapacityCoefficient': { label: '대응능력계수', unit: '', icon: 'fa-calculator', color: 'secondary' },
+
+                // [6. 취약성]
+                'vulnerabilityScore': { label: '취약성점수', unit: '점', icon: 'fa-triangle-exclamation', color: 'danger' },
+                'vulnerabilityRating': { label: '등급', unit: '', icon: 'fa-layer-group', color: 'danger' },
+
+                // [기타]
+                'val': { label: '값', unit: '', icon: 'fa-check', color: 'secondary' },
+                'count': { label: '개수', unit: '개', icon: 'fa-list-ol', color: 'dark' }
+            };
         
         //지도 생성 (대한민국 중심, 축소만 제한하고 이동은 자유롭게)
         var map = L.map('map', {
@@ -972,77 +1046,229 @@ LIMIT 5</textarea>
         function styleSig(f) { return { color: "#5e72e4", weight: 1.5, opacity: 0.6, fillColor: "#5e72e4", fillOpacity: 0.05 }; }
         function styleEmd(f) { return { color: "#fb6340", weight: 1, opacity: 0.8, fillColor: "#fb6340", fillOpacity: 0.1 }; }
 
-        function onEachRegion(feature, layer) {
-            var props = getProps(feature);
-            var code = props.code;
-            var name = props.name;
+        // 1. 각 지역 레이어 설정 함수 (L1 호버 개선 & 기능 통합)
+            function onEachRegion(feature, layer) {
+                var props = getProps(feature);
+                var code = String(props.code);
+                var name = props.name;
 
-            layer.bindTooltip(`<b>${name}</b>`, { direction: "top", sticky: true });
-            layer.on('mouseover', function() { this.setStyle({ fillOpacity: 0.3, weight: 3 }); });
-            layer.on('mouseout', function() { 
-                var defStyle;
-                if (code.length === 2) defStyle = styleSido;
-                else if (code.length === 5) defStyle = styleSig;
-                else defStyle = styleEmd;
-                this.setStyle(defStyle()); 
-            });
+                layer.bindTooltip(`<b>${name}</b>`, { direction: "top", sticky: true });
 
-            layer.on('click', function(e) {
-                if (!code) return;
-                showLoading(true, "상세 정보 조회 중...");
-                map.panTo(e.latlng, { animate: true, duration: 0.8 });
+                // [수정 1] 호버 스타일 개선 (L1도 면 색칠 + 앞으로 가져오기)
+                layer.on('mouseover', function () {
+                    this.setStyle({
+                        fillOpacity: 0.5,
+                        weight: 3,
+                        color: "#555",       // 테두리 진회색
+                        fillColor: "#888"    // 면 회색 (기존 색상 위에 덮어씌움)
+                    });
 
-                $.getJSON("/api/data/" + code, function(res) {
-                    showLoading(false);
-                    var content = "";
-                    var level = (code.length === 2) ? 'L1' : (code.length === 5) ? 'L2' : 'L3';
-                    
-                    var zoomBtn = "";
-                    if (level !== 'L3') {
-                        zoomBtn = `<button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="zoomToRegion(${e.latlng.lat}, ${e.latlng.lng}, '${level}')"><i class="fa-solid fa-magnifying-glass-plus"></i> 상세 지역 보기</button>`;
+                    // ★ 핵심: 호버된 지역을 가장 위로 올려서 테두리 겹침 해결
+                    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                        this.bringToFront();
                     }
-
-                    if (res.status === "success") {
-                        var d = res.data;
-                        var finalName = (d.label && d.label.value) ? d.label.value : name;
-                        var noImage = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png";
-                        var imgUrl = (d.image && d.image.value) ? d.image.value : noImage;
-                        var desc = (d.desc && d.desc.value) ? d.desc.value : "위키데이터 설명이 없습니다.";
-                        var grade = d.gradeLabel ? `<span class="badge bg-danger ms-1">${d.gradeLabel.value}</span>` : "";
-                        var score = d.vulScore ? `${parseFloat(d.vulScore.value).toFixed(2)}점` : "";
-                        
-                        content = `
-                            <div class="card border-0 shadow-sm" style="width: 280px; overflow: hidden;">
-                                <div style="height: 160px; overflow: hidden; background: #eee;">
-                                    <img src="${imgUrl}" class="w-100 h-100" style="object-fit: contain; padding:5px; background:white;" alt="${finalName}">
-                                </div>
-                                <div class="card-body p-3">
-                                    <h5 class="card-title fw-bold mb-1">${finalName} ${grade}</h5>
-                                    <p class="text-muted small mb-2 text-truncate">${desc}</p>
-                                    ${score ? `<div class="d-flex justify-content-between mb-1 small"><span><i class="fa-solid fa-chart-line text-warning"></i> 점수</span><strong>${score}</strong></div>` : ""}
-                                    <div class="d-grid mt-2">
-                                        <a href="${d.wikiURI ? d.wikiURI.value : '#'}" target="_blank" class="btn btn-sm btn-dark"><i class="fa-brands fa-wikipedia-w"></i> 위키데이터</a>
-                                    </div>
-                                    ${zoomBtn}
-                                </div>
-                                <div class="card-footer bg-light text-muted text-center py-1" style="font-size: 0.7rem;">
-                                    ※ Wikidata 이미지/로고 무작위 노출
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        content = `
-                            <div class="p-3 text-center">
-                                <h6 class="fw-bold">${name}</h6>
-                                <p class="text-muted small mb-2">가뭄 데이터 없음</p>
-                                ${zoomBtn}
-                            </div>
-                        `;
-                    }
-                    layer.bindPopup(content).openPopup();
                 });
-            });
-        }
+
+                layer.on('mouseout', function () {
+                    var defStyle;
+                    if (code.length === 2) defStyle = styleSido;
+                    else if (code.length === 5) defStyle = styleSig;
+                    else defStyle = styleEmd;
+
+                    if (typeof defStyle === 'function') {
+                        this.setStyle(defStyle());
+                    } else {
+                        this.setStyle({ fillOpacity: 0.2, weight: 1, color: "white" });
+                    }
+                });
+
+                // 클릭 이벤트 (팝업)
+                layer.on('click', function (e) {
+                    if (!code) return;
+
+                    showLoading(true, "상세 정보 조회 중...");
+                    map.panTo(e.latlng, { animate: true, duration: 0.8 });
+
+                    // API 호출
+                    $.ajax({
+                        url: "/api/data/" + code,
+                        dataType: 'json',
+                        success: function (res) {
+                            showLoading(false);
+                            var content = buildPopupHtml(res, name, code, e.latlng);
+                            layer.bindPopup(content, { maxWidth: 800 }).openPopup();
+                        },
+                        error: function () {
+                            showLoading(false);
+                            // Fallback
+                            var dummyRes = { status: "fail" };
+                            var content = buildPopupHtml(dummyRes, name, code, e.latlng);
+                            layer.bindPopup(content, { maxWidth: 800 }).openPopup();
+                        }
+                    });
+                });
+
+                layer.regionCode = code;
+            }
+
+            // 2. 팝업 HTML 생성 함수 (등급별 색상 적용)
+            function buildPopupHtml(res, name, code, latlng) {
+                var level = (code.length === 2) ? 'L1' : (code.length === 5) ? 'L2' : 'L3';
+
+                var levelBadge = (level === 'L1') ? '<span class="badge bg-dark ms-2" style="font-size:0.7rem;">광역</span>' :
+                    (level === 'L2') ? '<span class="badge bg-secondary ms-2" style="font-size:0.7rem;">기초</span>' : '';
+
+                var zoomBtn = "";
+                if (level !== 'L3') {
+                    zoomBtn = `<button class="btn btn-sm btn-outline-primary w-100 mt-3 shadow-sm fw-bold" onclick="zoomToRegion(${latlng.lat}, ${latlng.lng}, '${level}')">
+                <i class="fa-solid fa-magnifying-glass-plus me-1"></i>상세 지역 탐색
+            </button>`;
+                }
+
+                var d = (res.status === "success") ? res.data : {};
+                var finalName = (d.label && d.label.value) ? d.label.value : name;
+                var desc = (d.desc && d.desc.value) ? d.desc.value : "Wikidata에 상세 설명 정보가 없습니다.";
+                var score = d.vulScore ? `${parseFloat(d.vulScore.value).toFixed(2)}점` : "";
+
+                // [수정 2] 등급별 색상 및 라벨 처리 로직
+                var gradeRaw = d.gradeLabel ? d.gradeLabel.value : ""; // 예: "I 등급", "IV 등급"
+                var gradeObj = { label: "정보없음", class: "bg-secondary", text: "text-muted", border: "border-secondary" };
+
+                if (gradeRaw.includes("I") && !gradeRaw.includes("II") && !gradeRaw.includes("V")) { // I (관심)
+                    gradeObj = { label: "I (관심)", class: "bg-success", text: "text-success", border: "border-success" };
+                } else if (gradeRaw.includes("II") && !gradeRaw.includes("III")) { // II (주의)
+                    gradeObj = { label: "II (주의)", class: "bg-warning text-dark", text: "text-warning", border: "border-warning" };
+                } else if (gradeRaw.includes("III")) { // III (경계)
+                    gradeObj = { label: "III (경계)", class: "bg-orange", text: "text-orange", border: "border-orange" }; // 별도 style 필요
+                } else if (gradeRaw.includes("IV")) { // IV (심각)
+                    gradeObj = { label: "IV (심각)", class: "bg-danger", text: "text-danger", border: "border-danger" };
+                } else if (gradeRaw.includes("V")) { // V (매우심각)
+                    gradeObj = { label: "V (매우심각)", class: "bg-dark-red", text: "text-dark-red", border: "border-dark-red" }; // 별도 style 필요
+                } else if (gradeRaw) {
+                    gradeObj = { label: gradeRaw, class: "bg-secondary", text: "text-secondary", border: "border-secondary" };
+                }
+
+                var gradeBadge = gradeRaw ? `<span class="badge ${gradeObj.class} ms-1 shadow-sm">${gradeObj.label}</span>` : "";
+
+                // 이미지 HTML 생성
+                var noImagePlaceholder = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png";
+                var rawImgUrl = (d.image && d.image.value) ? d.image.value : "";
+                var imageHtml = "";
+
+                if (!rawImgUrl || rawImgUrl === noImagePlaceholder) {
+                    imageHtml = `
+                <div class="d-flex flex-column justify-content-center align-items-center bg-light border rounded mb-3" style="height: 180px; text-align: center;">
+                    <i class="fa-regular fa-image fa-2x text-secondary mb-2 opacity-50"></i>
+                    <span class="text-secondary small fw-bold">이미지 미보유</span>
+                    <span class="text-muted" style="font-size: 0.7rem;">(Wikidata Source)</span>
+                </div>`;
+                } else {
+                    imageHtml = `
+                <div class="shadow-sm rounded overflow-hidden mb-3 position-relative" style="height: 180px;">
+                    <img src="${rawImgUrl}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.3s;" alt="${finalName}">
+                    <div class="position-absolute bottom-0 end-0 bg-dark bg-opacity-50 text-white px-2 py-1 small" style="font-size:0.7rem; border-top-left-radius: 5px;">
+                        <i class="fa-brands fa-wikipedia-w"></i> Wikidata
+                    </div>
+                </div>`;
+                }
+
+                // [좌측 패널]
+                var leftPanel = `
+            <div class="p-3 bg-white" style="width: 300px;">
+                <div class="d-flex align-items-center mb-3 pe-3">
+                    <h5 class="fw-bold text-dark m-0 me-auto text-truncate">
+                        <i class="fa-solid fa-location-dot text-primary me-2"></i>${finalName}
+                    </h5>
+                    ${gradeBadge} ${levelBadge}
+                </div>
+                
+                ${imageHtml}
+                
+                <div class="mb-3">
+                    <div class="text-muted small mb-1 fw-bold"><i class="fa-solid fa-quote-left me-1 text-primary"></i>개요</div>
+                    <p class="text-secondary small mb-0 text-truncate-3" style="line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${desc}
+                    </p>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded mb-3 border">
+                    <span class="small text-muted"><i class="fa-solid fa-barcode me-1"></i>행정코드</span>
+                    <span class="font-monospace fw-bold text-dark">${code}</span>
+                </div>
+
+                ${score ? `<div class="d-flex justify-content-between align-items-center bg-light p-2 rounded mb-3 border ${gradeObj.border} border-opacity-50">
+                    <span class="small ${gradeObj.text} fw-bold"><i class="fa-solid fa-chart-line me-1"></i>취약성 점수</span>
+                    <span class="fw-bold ${gradeObj.text}">${score}</span>
+                </div>` : ""}
+
+                <div class="d-grid gap-2">
+                    <a href="${d.wikiURI ? d.wikiURI.value : '#'}" target="_blank" class="btn btn-sm btn-dark shadow-sm">
+                        <i class="fa-brands fa-wikipedia-w me-1"></i>위키데이터 원문 보기
+                    </a>
+                    ${zoomBtn}
+                </div>
+            </div>`;
+
+                // [우측 패널] (L3 전용)
+                var rightPanel = "";
+                if (level === 'L3' && res.status === "success") {
+                    const groups = [
+                        { name: "급수 인구 정보", color: "text-primary", keys: ['population', 'waterSupplyRate', 'waterSupplyPopulation'] },
+                        { name: "노출도 (Exposure)", color: "text-warning", keys: ['droughtSeverityAvg', 'droughtFrequency', 'droughtExposureScore', 'exposureCoefficient'] },
+                        { name: "민감도 (Sensitivity)", color: "text-success", keys: ['domesticWaterUsage', 'industrialWaterUsage', 'livingIndustrialWaterUsage', 'sensitivityCoefficient'] },
+                        { name: "보조수원 (Auxiliary)", color: "text-info", keys: ['reservoirCapacity', 'groundwaterAvailable', 'auxWaterSourceCapacity', 'auxWaterSourceCoefficient'] },
+                        { name: "대응능력 (Response)", color: "text-secondary", keys: ['waterSupplyAvailableDays', 'responseCapacityCoefficient'] }
+                    ];
+
+                    const fmt = (val) => val ? Number(val).toLocaleString() : '-';
+                    const getVal = (key) => d[key] ? d[key].value : null;
+
+                    let tableRows = "";
+                    groups.forEach(g => {
+                        tableRows += `<tr class="bg-light border-bottom"><td colspan="2" class="fw-bold ${g.color} pt-2 pb-1 ps-2 small"><i class="fa-solid fa-chevron-right me-1" style="font-size:0.7rem;"></i>${g.name}</td></tr>`;
+                        g.keys.forEach(k => {
+                            let info = ATTR_MAP[k] || { label: k, unit: '' };
+                            let val = getVal(k);
+                            if (val) {
+                                if (!isNaN(val) && val.indexOf('.') !== -1) val = parseFloat(val).toFixed(2);
+                                else val = Number(val).toLocaleString();
+                            } else {
+                                val = "-";
+                            }
+
+                            tableRows += `
+                        <tr class="border-bottom-light">
+                            <td class="text-secondary ps-3 py-1"><i class="fa-solid ${info.icon} me-1 text-muted" style="font-size: 0.8em; width:15px;"></i>${info.label}</td>
+                            <td class="text-end pe-2 py-1 font-monospace text-dark">${val} <span class="text-muted" style="font-size:0.8em;">${info.unit}</span></td>
+                        </tr>`;
+                        });
+                    });
+
+                    // 등급별 색상 적용된 푸터
+                    let tableFooter = `
+                <tr class="${gradeObj.class} bg-opacity-10 border-top ${gradeObj.border}">
+                    <td class="fw-bold ${gradeObj.text} ps-2 py-2"><i class="fa-solid fa-layer-group me-1"></i>최종 등급</td>
+                    <td class="text-end fw-bold ${gradeObj.text} pe-2 py-2">${gradeObj.label}</td>
+                </tr>`;
+
+                    rightPanel = `
+                <div class="border-start bg-white d-flex flex-column" style="width: 340px; max-height: 550px;">
+                    <div class="alert alert-primary m-0 rounded-0 border-0 border-bottom fw-bold py-2 px-3 pe-5">
+                        <i class="fa-solid fa-droplet me-2"></i>KODV 상세 분석 데이터
+                    </div>
+                    <div class="overflow-auto flex-grow-1" style="max-height: 500px;">
+                        <table class="table table-sm table-borderless small mb-0 w-100">
+                            <tbody>${tableRows}${tableFooter}</tbody>
+                        </table>
+                    </div>
+                    <div class="bg-light text-center py-1 border-top text-muted" style="font-size: 0.7rem;">
+                        데이터 출처: KODV Knowledge Graph
+                    </div>
+                </div>`;
+                }
+
+                return `<div class="d-flex rounded overflow-hidden shadow">${leftPanel}${rightPanel}</div>`;
+            }
 
         function handleEnter(e) { if(e.key === 'Enter') askAI(); }
         function askAI() {
