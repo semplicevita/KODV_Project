@@ -1212,7 +1212,20 @@ LIMIT 5</textarea>
                         }
                     }).addTo(map);
 
-                    map.fitBounds(window.highlightLayer.getBounds());
+                    // [수정] 줌 레벨 강제 제어 방식 (확실한 방법)
+                    // 1. 일단 해당 영역으로 이동 (애니메이션 없이 즉시 이동)
+                    map.fitBounds(window.highlightLayer.getBounds(), { animate: false });
+
+                    // 2. 이동 후 줌 레벨이 너무 가까우면(예: 12 이상) 강제로 11로 축소
+                    if (map.getZoom() > 11) {
+                        map.setZoom(11);
+                    }
+
+                    // 3. 만약 부드러운 이동을 원하시면 위 1,2번 대신 아래 한 줄을 쓰세요 (maxZoom 옵션 재시도)
+                    // map.fitBounds(window.highlightLayer.getBounds(), { maxZoom: 11, padding: [50, 50], animate: true, duration: 1.0 });
+
+                } else {
+                    console.error("검색 결과 코드는 있는데, 지도에서 하나도 찾지 못했습니다.");
                 }
             }).fail(function () {
                 console.log("GeoJSON 로드 실패: /static/emd.geojson 경로를 확인하세요.");
