@@ -37,6 +37,20 @@
         /* 콘솔 스타일 */
         .console-textarea { background-color: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; border: none; resize: vertical; }
         .console-textarea:focus { background-color: #1e1e1e; color: #fff; box-shadow: none; border: 1px solid #007bff; }
+
+        /* 전문가 콘솔 탭 스타일링 */
+        #consoleTab .nav-link {
+            color: #6c757d; /* 기본: 회색 */
+            font-weight: 600;
+        }
+        #consoleTab .nav-link.active {
+            color: #0d6efd !important; /* 활성: 파란색 */
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+        }
+        #consoleTab .nav-link:hover {
+            color: #0a58ca;
+        }
     </style>
 </head>
 <body>
@@ -84,80 +98,80 @@
         </div>
     </div>
 
-    <div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-database text-primary me-2"></i>사용 가능한 가뭄 데이터 목록 (총 20종)</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div class="alert alert-primary m-3 border-0 small">
-                        <i class="fa-solid fa-circle-info me-2"></i>아래 키워드를 포함하여 자연어로 질문해 보세요. (예: "충남에서 <strong>평균가뭄심도</strong>가 가장 높은 곳?")
-                    </div>
-                    <div class="table-responsive" style="max-height: 60vh;">
-                        <table class="table table-hover table-bordered mb-0 small table-custom">
-                            <thead class="table-light sticky-top">
-                                <tr class="text-center">
-                                    <th style="width: 15%">분류</th><th style="width: 35%">데이터 항목 (키워드)</th><th>설명</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td rowspan="3" class="text-center bg-white fw-bold text-secondary">기본 정보</td><td><strong>인구</strong></td><td>행정구역 내 거주 인구수</td></tr>
-                                <tr><td><strong>급수율</strong></td><td>상수도 보급 비율 (%)</td></tr>
-                                <tr><td><strong>급수인구</strong></td><td>실제 상수도를 공급받는 인구</td></tr>
-                                <tr><td rowspan="4" class="text-center bg-white fw-bold text-secondary">노출도</td><td><strong>평균 가뭄 심도</strong></td><td>기상학적 가뭄의 평균 심각도</td></tr>
-                                <tr><td><strong>가뭄 발생 빈도</strong></td><td>과거 가뭄 발생 횟수</td></tr>
-                                <tr><td><strong>가뭄 노출도</strong></td><td>심도와 빈도를 종합한 점수</td></tr>
-                                <tr><td><strong>노출도 계수</strong></td><td>노출도 점수의 표준화 계수</td></tr>
-                                <tr><td rowspan="4" class="text-center bg-white fw-bold text-secondary">민감도</td><td><strong>생활용수 이용량</strong></td><td>가정 등 일상생활 물 사용량</td></tr>
-                                <tr><td><strong>공업용수 이용량</strong></td><td>산업/공장용 물 사용량</td></tr>
-                                <tr><td><strong>생·공용수 이용량</strong></td><td>생활용수 + 공업용수 합계</td></tr>
-                                <tr><td><strong>민감도 계수</strong></td><td>수요 기반 피해 가능성 계수</td></tr>
-                                <tr><td rowspan="4" class="text-center bg-white fw-bold text-secondary">보조수원</td><td><strong>저수지 유효 저수량</strong></td><td>사용 가능한 저수지 물의 양</td></tr>
-                                <tr><td><strong>지하수 개발 가능량</strong></td><td>이용 가능한 지하수 총량</td></tr>
-                                <tr><td><strong>보조수원 능력</strong></td><td>비상시 물 공급 잠재력</td></tr>
-                                <tr><td><strong>보조수원 계수</strong></td><td>보조수원 능력의 표준화 계수</td></tr>
-                                <tr><td rowspan="2" class="text-center bg-white fw-bold text-secondary">대응 능력</td><td><strong>용수공급 가능일수</strong></td><td>물 공급 지속 가능 예상 일수</td></tr>
-                                <tr><td><strong>대응능력 계수</strong></td><td>가뭄 대응 역량 표준화 계수</td></tr>
-                                <tr><td rowspan="2" class="text-center bg-white fw-bold text-danger">취약성</td><td><strong>취약성 점수</strong></td><td>종합 가뭄 취약성 점수</td></tr>
-                                <tr><td><strong>취약성 등급</strong></td><td>1(관심) ~ 5(매우심각) 등급</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">닫기</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="consoleModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="consoleModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title"><i class="fa-solid fa-terminal me-2 text-success"></i>SPARQL Expert Console</h5>
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="fa-solid fa-terminal me-2 text-success"></i>SPARQL Expert Console
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body bg-light">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">SPARQL Query Input</label>
-                        <textarea id="console-input" class="form-control console-textarea p-3" rows="12" spellcheck="false">
-PREFIX kodv:    <https://knowledgemap.kr/kodv/def/>
-PREFIX kodvid:  <https://knowledgemap.kr/kodv/id/>
-PREFIX koad:    <http://vocab.datahub.kr/def/administrative-division/>
-PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX owl:     <http://www.w3.org/2002/07/owl#>
-PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
-PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>
-PREFIX dcterms: <http://purl.org/dc/terms/>
-PREFIX schema:  <http://schema.org/>
-PREFIX qudt:    <http://qudt.org/schema/qudt/>
-PREFIX unit:    <http://qudt.org/vocab/unit/>
-PREFIX qk:      <http://qudt.org/vocab/quantitykind/>
 
+                <div class="modal-body bg-light p-0">
+                    <ul class="nav nav-tabs nav-fill bg-white border-bottom" id="consoleTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="query-tab" data-bs-toggle="tab" data-bs-target="#query-panel" type="button" role="tab">
+                                <i class="fa-solid fa-code me-2"></i>Query Editor
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="vocab-tab" data-bs-toggle="tab" data-bs-target="#vocab-panel" type="button" role="tab">
+                                <i class="fa-solid fa-book me-2"></i>Vocabulary Dictionary
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="ttl-tab" data-bs-toggle="tab" data-bs-target="#ttl-panel" type="button" role="tab">
+                                <i class="fa-solid fa-file-code me-2"></i>Full Knowledge Graph (TTL)
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content p-3" id="consoleTabContent">
+                        
+                        <div class="tab-pane fade show active" id="query-panel" role="tabpanel">
+                            
+                            <div class="alert alert-secondary py-2 px-3 mb-2 small">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fa-solid fa-circle-check text-success me-2"></i><strong>Prefix 자동 적용됨:</strong> kodv, koad, rdfs, skos, etc.
+                                    </span>
+                                    <button class="btn btn-sm btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#prefixCollapse" aria-expanded="false">
+                                        <i class="fa-solid fa-list me-1"></i>Prefix 목록 보기
+                                    </button>
+                                </div>
+                                
+                                <div class="collapse mt-2" id="prefixCollapse">
+                                    <div class="card card-body bg-white border p-0 overflow-hidden">
+                                        <table class="table table-sm table-striped mb-0 table-bordered" style="font-size: 0.85rem;">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 15%" class="text-center">Prefix</th>
+                                                    <th>Namespace URI</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td class="text-center fw-bold">kodv</td><td class="font-monospace text-muted">&lt;https://knowledgemap.kr/kodv/def/&gt;</td></tr>
+                                                <tr><td class="text-center fw-bold">kodvid</td><td class="font-monospace text-muted">&lt;https://knowledgemap.kr/kodv/id/&gt;</td></tr>
+                                                <tr><td class="text-center fw-bold">koad</td><td class="font-monospace text-muted">&lt;http://vocab.datahub.kr/def/administrative-division/&gt;</td></tr>
+                                                <tr><td class="text-center fw-bold">rdfs</td><td class="font-monospace text-muted">&lt;http://www.w3.org/2000/01/rdf-schema#&gt;</td></tr>
+                                                <tr><td class="text-center fw-bold">skos</td><td class="font-monospace text-muted">&lt;http://www.w3.org/2004/02/skos/core#&gt;</td></tr>
+                                                <tr><td class="text-center fw-bold">qudt</td><td class="font-monospace text-muted">&lt;http://qudt.org/schema/qudt/&gt;</td></tr>
+                                                <tr><td class="text-center fw-bold">unit</td><td class="font-monospace text-muted">&lt;http://qudt.org/vocab/unit/&gt;</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-end mb-1">
+                                    <span class="badge bg-danger me-1"><i class="fa-solid fa-ban me-1"></i>DELETE/UPDATE 금지</span>
+                                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>SELECT 허용</span>
+                                </div>
+                                
+                                <textarea id="console-input" class="form-control console-textarea p-3 font-monospace" rows="10" spellcheck="false" 
+                                style="background-color: #1e1e1e; color: #d4d4d4; border: 1px solid #333; font-size: 0.95rem;">
 SELECT ?name ?pop
 WHERE {
   ?s a koad:Dong ;
@@ -165,25 +179,116 @@ WHERE {
      kodv:population ?pop .
 }
 ORDER BY DESC(?pop)
-LIMIT 5
-                        </textarea>
-                        <div class="form-text text-end mt-1">
-                            <span class="badge bg-danger">DELETE/UPDATE 금지</span>
-                            <span class="badge bg-success">SELECT 허용</span>
+LIMIT 5</textarea>
+                            </div>
+
+                            <button class="btn btn-primary w-100 fw-bold py-2 shadow-sm" onclick="runConsoleQuery()">
+                                <i class="fa-solid fa-play me-2"></i> 쿼리 실행 (Execute)
+                            </button>
+                            
+                            <hr class="my-4">
+                            
+                            <label class="form-label fw-bold"><i class="fa-solid fa-table me-2"></i>실행 결과 (Result)</label>
+                            <div class="table-responsive bg-white border rounded" style="max-height: 250px; min-height: 100px;">
+                                <table class="table table-sm table-hover table-striped mb-0 small" id="console-result-table">
+                                    <thead class="table-light sticky-top"><tr><th class="p-3 text-center text-muted">결과가 여기에 표시됩니다.</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                    <button class="btn btn-primary w-100 fw-bold" onclick="runConsoleQuery()">
-                        <i class="fa-solid fa-play me-2"></i> 실행 (Run Query)
-                    </button>
-                    
-                    <hr>
-                    
-                    <label class="form-label fw-bold">Execution Result</label>
-                    <div class="table-responsive bg-white border rounded p-2" style="max-height: 300px; min-height: 100px;">
-                        <table class="table table-sm table-hover mb-0" id="console-result-table">
-                            <thead class="table-light"><tr><th>결과가 여기에 표시됩니다.</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
+
+                        <div class="tab-pane fade" id="vocab-panel" role="tabpanel">
+                            <div class="alert alert-info py-2 small mb-2">
+                                <i class="fa-solid fa-info-circle me-2"></i>KODV 프로젝트에서 사용된 모든 어휘 및 매핑 정보입니다.
+                            </div>
+                            <div class="table-responsive border rounded bg-white shadow-sm" style="height: 600px; overflow-y: auto;">
+                                <table class="table table-hover table-bordered mb-0 small">
+                                    <thead class="table-light sticky-top">
+                                        <tr class="text-center">
+                                            <th style="width: 12%">유형</th>
+                                            <th style="width: 30%">어휘 (Vocabulary)</th>
+                                            <th style="width: 18%">항목명 (Label)</th>
+                                            <th>설명 (Description)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="table-secondary"><td colspan="4" class="fw-bold ps-3">1. 행정구역 클래스 (koad)</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:SpecialMetropolitanCity</td><td>특별시</td><td>서울</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:MetropolitanCity</td><td>광역시</td><td>부산, 인천 등</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:SpecialSelfGoverningCity</td><td>특별자치시</td><td>세종</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:Province</td><td>도</td><td>경기, 강원 등</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:SpecialSelfGoverningProvince</td><td>특별자치도</td><td>제주, 강원</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:City</td><td>시</td><td>일반 시</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:County</td><td>군</td><td>군 지역</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:District</td><td>구 (자치구)</td><td>특별시/광역시 산하</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:AdministrativeCity</td><td>행정시</td><td>제주시, 서귀포시 등</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:NonAutonomousDistrict</td><td>구 (행정구)</td><td>수원 팔달구 등</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:Eup</td><td>읍</td><td>L3 행정구역</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:Myeon</td><td>면</td><td>L3 행정구역</td></tr>
+                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:Dong</td><td>동 (행정동)</td><td>L3 행정구역</td></tr>
+
+                                        <tr class="table-secondary"><td colspan="4" class="fw-bold ps-3">2. 행정구역 관계 (koad)</td></tr>
+                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesCity</td><td>시 포함</td><td>도 -> 시</td></tr>
+                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesCounty</td><td>군 포함</td><td>도 -> 군</td></tr>
+                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesDistrict</td><td>구 포함</td><td>시 -> 구</td></tr>
+                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesTown</td><td>읍 포함</td><td>시군 -> 읍</td></tr>
+                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesTownship</td><td>면 포함</td><td>시군 -> 면</td></tr>
+                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesNeighborhood</td><td>동 포함</td><td>시군구 -> 동</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isCityOf</td><td>~에 속한 시</td><td>시 -> 도 (역관계)</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isCountyOf</td><td>~에 속한 군</td><td>군 -> 도 (역관계)</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isDistrictOf</td><td>~에 속한 구</td><td>구 -> 시 (역관계)</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isTownOf</td><td>~에 속한 읍</td><td>읍 -> 시군 (역관계)</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isTownshipOf</td><td>~에 속한 면</td><td>면 -> 시군 (역관계)</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isNeighborhoodOf</td><td>~에 속한 동</td><td>동 -> 시군구 (역관계)</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">koad:divisionCode</td><td>행정구역코드</td><td>Unique ID (String)</td></tr>
+
+                                        <tr class="table-secondary"><td colspan="4" class="fw-bold ps-3">3. 가뭄 데이터 속성 (kodv - L3 전용)</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:population</td><td>인구</td><td>거주 총 인구수</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:waterSupplyRate</td><td>급수율</td><td>상수도 보급률(%)</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:waterSupplyPopulation</td><td>급수인구</td><td>상수도 공급 인구</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:droughtSeverityAvg</td><td>평균 가뭄 심도</td><td>가뭄 심각도 (SPI)</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:droughtFrequency</td><td>가뭄 발생 빈도</td><td>발생 횟수 (Count)</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:droughtExposureScore</td><td>가뭄 노출도</td><td>종합 점수</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:exposureCoefficient</td><td>노출도 계수</td><td>표준화 계수</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:domesticWaterUsage</td><td>생활용수 이용량</td><td>가정용 사용량</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:industrialWaterUsage</td><td>공업용수 이용량</td><td>산업용 사용량</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:sensitivityCoefficient</td><td>민감도 계수</td><td>표준화 계수</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:reservoirCapacity</td><td>저수지 유효 저수량</td><td>천㎥ 단위</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:groundwaterAvailable</td><td>지하수 개발가능량</td><td>천㎥ 단위</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:livingIndustrialWaterUsage</td><td>생·공용수 이용량</td><td>생활+공업 합산</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:auxWaterSourceCapacity</td><td>보조수원능력</td><td>종합 능력</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:auxWaterSourceCoefficient</td><td>보조수원계수</td><td>표준화 계수</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:waterSupplyAvailableDays</td><td>용수공급 가능일수</td><td>지속 가능 일수</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:responseCapacityCoefficient</td><td>대응능력계수</td><td>표준화 계수</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:vulnerabilityScore</td><td>취약성 점수</td><td>최종 취약성 점수</td></tr>
+                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:vulnerabilityRatingNumeric</td><td>취약성 등급 (숫자)</td><td>1~5 (비교/정렬용)</td></tr>
+
+                                        <tr class="table-secondary"><td colspan="4" class="fw-bold ps-3">4. 등급 식별자 (kodvid)</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_I</td><td>I 등급 (관심)</td><td>URI Resource</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_II</td><td>II 등급 (주의)</td><td>URI Resource</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_III</td><td>III 등급 (경계)</td><td>URI Resource</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_IV</td><td>IV 등급 (심각)</td><td>URI Resource</td></tr>
+                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_V</td><td>V 등급 (매우심각)</td><td>URI Resource</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="ttl-panel" role="tabpanel">
+                            <div class="alert alert-secondary py-2 small mb-2 d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-file-lines me-2"></i>"KODV의 전체 지식그래프(Schema + Instance) 소스 코드입니다. (총 88,917 Triples)"</span>
+                                <span id="ttl-loading" class="text-primary fw-bold" style="display:none;">
+                                    <i class="fa-solid fa-spinner fa-spin me-1"></i>Loading...
+                                </span>
+                            </div>
+                            
+                            <div class="position-relative">
+                                <pre id="ttl-content" class="bg-dark text-light p-3 rounded border border-secondary shadow-sm" 
+                                     style="height: 600px; overflow-y: auto; font-size: 0.85rem; line-height: 1.5;">
+(파일을 불러오려면 'Ontology Example' 탭을 클릭하세요...)
+                                </pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -407,6 +512,37 @@ LIMIT 5
             else { if(emdLayer) map.addLayer(emdLayer); b.innerText = "상세 (읍면동)"; }
         }
         map.on('zoomend', updateLayer);
+
+        // [최적화] 페이지 로드 시 TTL 파일 백그라운드 미리 읽기 (Pre-loading)
+        document.addEventListener("DOMContentLoaded", function() {
+            const ttlContentBox = document.getElementById('ttl-content');
+            const loadingText = document.getElementById('ttl-loading');
+    
+            // 파일 경로 (static 폴더 내 실제 파일명으로 수정 필요)
+            const filePath = '/static/KODV_KnowledgeGraph_Final.ttl';
+
+            // 1. 로딩 표시 활성화 (혹시 사용자가 0.1초만에 탭을 누를 경우를 대비)
+            if(loadingText) loadingText.style.display = 'inline-block';
+            if(ttlContentBox) ttlContentBox.textContent = "Background loading in progress...";
+
+            // 2. 백그라운드 Fetch
+            fetch(filePath)
+                .then(response => {
+                    if (!response.ok) throw new Error("File not found (" + response.status + ")");
+                    return response.text();
+                })
+                .then(text => {
+                    // 3. 숨겨진 탭에 미리 텍스트 주입 (DOM 렌더링 비용 미리 지불)
+                    if(ttlContentBox) ttlContentBox.textContent = text;
+                })
+                .catch(err => {
+                    if(ttlContentBox) ttlContentBox.textContent = "Error loading TTL: " + err.message;
+                })
+                .finally(() => {
+                    // 4. 로딩 표시 숨김
+                    if(loadingText) loadingText.style.display = 'none';
+                });
+        });
     </script>
 </body>
 </html>
