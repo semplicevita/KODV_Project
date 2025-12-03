@@ -290,10 +290,30 @@ def run_sparql_console():
         if any(word in upper_query for word in forbidden_keywords):
             return jsonify({"status": "error", "message": "🚫 보안 경고: 데이터 수정/삭제 쿼리는 허용되지 않습니다."})
 
-        print(f"💻 전문가 쿼리 실행:\n{query}")
+        # 2. ★ [수정] 네임스페이스 강제 주입
+        # 사용자가 SELECT 구문만 입력해도 작동하도록 모든 Prefix를 미리 붙여줍니다.
+        full_query = f"""
+        PREFIX kodv:    <https://knowledgemap.kr/kodv/def/>
+        PREFIX kodvid:  <https://knowledgemap.kr/kodv/id/>
+        PREFIX koad:    <http://vocab.datahub.kr/def/administrative-division/>
+        PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX owl:     <http://www.w3.org/2002/07/owl#>
+        PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+        PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>
+        PREFIX dcterms: <http://purl.org/dc/terms/>
+        PREFIX schema:  <http://schema.org/>
+        PREFIX qudt:    <http://qudt.org/schema/qudt/>
+        PREFIX unit:    <http://qudt.org/vocab/unit/>
+        PREFIX qk:      <http://qudt.org/vocab/quantitykind/>
+        
+        {query}
+        """
 
-        # 2. 실행
-        sparql.setQuery(query)
+        print(f"💻 전문가 쿼리 실행 (Auto-Prefix):\n{full_query}")
+
+        # 3. 실행
+        sparql.setQuery(full_query) # full_query로 변경됨
         sparql.setReturnFormat(JSON)
         results = sparql.query().convert()
         
