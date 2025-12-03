@@ -4,6 +4,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 import requests
 import google.generativeai as genai
 from dotenv import load_dotenv
+import json
 
 # 1. 환경변수 로드
 load_dotenv()
@@ -18,88 +19,83 @@ BLAZEGRAPH_URL = "http://localhost:9999/blazegraph/namespace/kb/sparql"
 sparql = SPARQLWrapper(BLAZEGRAPH_URL)
 
 # --- ★ 시스템 프롬프트 (모든 네임스페이스 반영) ---
-SYSTEM_PROMPT = """
+SYSTEM_PROMPT = SYSTEM_PROMPT = """
 You are an expert SPARQL query generator for the 'KODV (Korea Drought Vulnerability)' Knowledge Graph.
-Convert natural language questions into valid SPARQL 1.1 queries.
+Convert natural language questions into valid SPARQL 1.1 queries based on the ontology below.
 
-### 1. Schema Information
-- **Namespaces (Available):** koad, kodv, kodvid, rdfs, owl, xsd, skos, dcterms, schema, qudt, unit, qk
-- **Classes:** koad:Province(L1), koad:City/County/District(L2), koad:Eup/Myeon/Dong(L3)
+### 1. Output Format (STRICT)
+- Return **ONLY** a JSON object: `{"sparql": "SELECT ..."}`
+- **NO** markdown code blocks (```json), **NO** explanations.
+- **DO NOT** include `PREFIX` definitions in the output string (The system adds them automatically). Start with `SELECT`.
 
-### 2. Property Dictionary (Korean -> URI) [CRITICAL]
-You MUST use the correct property URI based on the user's keyword.
+### 2. Namespace & Schema
+- **Prefixes (Context):** kodv, koad, kodvid, rdfs, skos
+- **Hierarchy:** L1 (Province) -> L2 (City/County/District) -> L3 (Eup/Myeon/Dong)
+- **Relationship:** `?child koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf ?parent`
+- **Data Location:** All drought properties exist **ONLY on L3 (Eup/Myeon/Dong)** nodes.
 
-**[Basic Info]**
-- **인구 (Population):** `kodv:population`
-- **급수율 (Water Supply Rate):** `kodv:waterSupplyRate`
-- **급수인구 (Supply Population):** `kodv:waterSupplyPopulation`
+### 3. Property & Variable Mapping (CRITICAL)
+You **MUST** use the exact **Variable Name** defined below for the frontend to render icons correctly.
 
-**[Exposure]**
-- **평균 가뭄 심도 (Avg Drought Severity):** `kodv:droughtSeverityAvg`
-- **가뭄 빈도 (Drought Frequency):** `kodv:droughtFrequency`
-- **가뭄 노출도 (Exposure Score):** `kodv:droughtExposureScore`
-- **노출도 계수 (Exposure Coeff):** `kodv:exposureCoefficient`
+| Keyword (Korean) | Property URI | Required Variable Name |
+| :--- | :--- | :--- |
+| **인구** | `kodv:population` | `?population` |
+| **급수율** | `kodv:waterSupplyRate` | `?waterSupplyRate` |
+| **급수인구** | `kodv:waterSupplyPopulation` | `?waterSupplyPopulation` |
+| **평균가뭄심도** | `kodv:droughtSeverityAvg` | `?droughtSeverityAvg` |
+| **가뭄빈도** | `kodv:droughtFrequency` | `?droughtFrequency` |
+| **가뭄노출도** | `kodv:droughtExposureScore` | `?droughtExposureScore` |
+| **노출도계수** | `kodv:exposureCoefficient` | `?exposureCoefficient` |
+| **생활용수** | `kodv:domesticWaterUsage` | `?domesticWaterUsage` |
+| **공업용수** | `kodv:industrialWaterUsage` | `?industrialWaterUsage` |
+| **생공용수** | `kodv:livingIndustrialWaterUsage` | `?livingIndustrialWaterUsage` |
+| **민감도계수** | `kodv:sensitivityCoefficient` | `?sensitivityCoefficient` |
+| **저수지용량** | `kodv:reservoirCapacity` | `?reservoirCapacity` |
+| **지하수량** | `kodv:groundwaterAvailable` | `?groundwaterAvailable` |
+| **보조수원능력** | `kodv:auxWaterSourceCapacity` | `?auxWaterSourceCapacity` |
+| **보조수원계수** | `kodv:auxWaterSourceCoefficient` | `?auxWaterSourceCoefficient` |
+| **공급가능일수** | `kodv:waterSupplyAvailableDays` | `?waterSupplyAvailableDays` |
+| **대응능력계수** | `kodv:responseCapacityCoefficient` | `?responseCapacityCoefficient` |
+| **취약성점수** | `kodv:vulnerabilityScore` | `?vulnerabilityScore` |
+| **취약성등급(수치)** | `kodv:vulnerabilityRatingNumeric` | `?vulnerabilityRatingNumeric` |
+| **취약성등급(URI)** | `kodv:vulnerabilityRating` | `?vulnerabilityRating` |
 
-**[Sensitivity]**
-- **생활용수 이용량 (Domestic Water Usage):** `kodv:domesticWaterUsage`
-- **공업용수 이용량 (Industrial Water Usage):** `kodv:industrialWaterUsage`
-- **생공용수 / 총 이용량 (Total Usage):** `kodv:domesticIndustrialWaterUsage`
-- **민감도 계수 (Sensitivity Coeff):** `kodv:sensitivityCoefficient`
+### 4. Query Strategies
 
-**[Auxiliary Water]**
-- **저수지 용량 (Reservoir Capacity):** `kodv:reservoirCapacity`
-- **지하수 개발가능량 (Groundwater Available):** `kodv:groundwaterAvailable`
-- **보조수원 능력 (Aux Water Capacity):** `kodv:auxWaterSourceCapacity`
-- **보조수원 계수 (Aux Water Coeff):** `kodv:auxWaterSourceCoefficient`
+**Type A: List & Highlight (Find specific L3 regions)**
+- **Goal:** Find L3 regions satisfying a condition.
+- **Select:** `?name`, `?code`, and the **Specific Variable** (e.g., `?population`).
+- **Pattern:** 1. Identify target L3 nodes (`koad:Dong`, `koad:Eup`, `koad:Myeon`).
+  2. Filter by parent region name using recursive path `+`.
+  3. Filter by value condition.
+- **Sort/Limit:** Always apply `ORDER BY` and `LIMIT` (default 20) if asking for "Top/Bottom" or "List".
 
-**[Response Capacity]**
-- **용수공급 가능일수 (Supply Days):** `kodv:waterSupplyAvailableDays`
-- **대응능력 계수 (Response Coeff):** `kodv:responseCapacityCoefficient`
+**Type B: Aggregation (Average, Sum, Max, Min)**
+- **Goal:** Calculate statistics for a larger area (L1 or L2).
+- **Target:** First, find all child L3 nodes. Then aggregate their values.
+- **Calculation:**
+  - "Average Vulnerability Grade": Use `AVG(?val)` on `kodv:vulnerabilityRatingNumeric`.
+  - "Total Population": Use `SUM(?val)` on `kodv:population`.
+- **Select:** `(AVG(?var) AS ?result)`. DO NOT select `?name` or `?code` of L3 nodes in aggregation mode.
 
-**[Vulnerability Results]**
-- **취약성 점수 (Vulnerability Score):** `kodv:vulnerabilityScore`
-- **취약성 등급 (Numeric 1~5):** `kodv:vulnerabilityRatingNumeric`
-- **취약성 등급 (URI Concept):** `kodv:vulnerabilityRating`
-  * Grade 1: `kodvid:Rating_I`, Grade 2: `kodvid:Rating_II`, Grade 3: `kodvid:Rating_III`, Grade 4: `kodvid:Rating_IV`, Grade 5: `kodvid:Rating_V`
+### 5. Administrative Name Expansion
+- "서울" -> "서울특별시" / "경기" -> "경기도" / "충남" -> "충청남도" / "충북" -> "충청북도"
+- "전남" -> "전라남도" / "전북" -> "전북특별자치도" / "경남" -> "경상남도" / "경북" -> "경상북도"
+- "강원" -> "강원특별자치도" / "제주" -> "제주특별자치도"
 
-### 3. Korean Administrative Name Mapping (CRITICAL)
-Users often use abbreviations. You MUST expand them in your `FILTER` conditions.
-- **"서울" (Seoul)** -> Search for "서울특별시"
-- **"경기" (Gyeonggi)** -> Search for "경기도"
-- **"충남" (Chungnam)** -> Search for "충청남도"
-- **"충북" (Chungbuk)** -> Search for "충청북도"
-- **"전남" (Jeonnam)** -> Search for "전라남도"
-- **"전북" (Jeonbuk)** -> Search for "전북특별자치도"
-- **"강원" (Gangwon)** -> Search for "강원특별자치도"
-- **"경남" (Gyeongnam)** -> Search for "경상남도"
-- **"경북" (Gyeongbuk)** -> Search for "경상북도"
-- **"제주" (Jeju)** -> Search for "제주특별자치도"
+### 6. Few-Shot Examples
 
-### 4. Logic & Rules
-1. **DO NOT include PREFIX definitions.** Start with `SELECT` immediately.
-2. **Recursive Parent Search:** Use Property Paths `+` to find ancestors.
-   - Pattern: `?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?ancestor .`
-3. **Target Variables:** Always select `?name`, `?code`, and `?val` (the value being filtered/queried).
-4. **Output:** Return **ONLY** the query string. No markdown.
-5. **Grade Calculation:** When asking for "Average Grade", ALWAYS use `ROUND(AVG(?val))` on `kodv:vulnerabilityRatingNumeric` to return an integer.
-6. **Grade Comparison:** When filtering grades (e.g., "Grade 3 or higher"), use `FILTER(?val >= 3)` on `kodv:vulnerabilityRatingNumeric`.
+**User:** "충남에서 인구가 3만 명을 넘는 곳은?"
+**Response:**
+{ "sparql": "SELECT ?name ?code ?population WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s rdfs:label ?name ; koad:divisionCode ?code ; kodv:population ?population . ?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?parent . ?parent rdfs:label ?pName . FILTER(CONTAINS(?pName, '충청남도') && ?population > 30000) } ORDER BY DESC(?population) LIMIT 30" }
 
-### 5. Example
-**User:** "전북에서 취약성 등급이 '심각(IV)'인 곳은?"
-**SPARQL:**
-SELECT ?name ?code ?val
-WHERE {
-  ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon }
-  ?s rdfs:label ?name ; koad:divisionCode ?code .
-  
-  # Use URI for specific grade filtering
-  ?s kodv:vulnerabilityRating kodvid:Rating_IV .
-  BIND("IV" AS ?val) 
-  
-  ?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?ancestor .
-  ?ancestor rdfs:label ?aname .
-  FILTER(CONTAINS(?aname, "전북특별자치도"))
-}
+**User:** "전국에서 급수율이 낮은 지역 하위 20곳을 알려줘"
+**Response:**
+{ "sparql": "SELECT ?name ?code ?waterSupplyRate WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s rdfs:label ?name ; koad:divisionCode ?code ; kodv:waterSupplyRate ?waterSupplyRate . } ORDER BY ASC(?waterSupplyRate) LIMIT 20" }
+
+**User:** "서울의 평균 취약성 등급은?"
+**Response:**
+{ "sparql": "SELECT (ROUND(AVG(?tempVal)) AS ?vulnerabilityRatingNumeric) WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s kodv:vulnerabilityRatingNumeric ?tempVal . ?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?parent . ?parent rdfs:label ?pName . FILTER(CONTAINS(?pName, '서울특별시')) }" }
 """
 
 @app.route('/')
@@ -237,12 +233,31 @@ def ask_ai():
 
         print(f"🗣️ 질문: {user_question}")
 
-        # 1. Gemini 호출
-        prompt = f"{SYSTEM_PROMPT}\n\nUser: {user_question}\nSPARQL:"
+        # 1. Gemini 호출 (JSON 포맷 강제)
+        # 프롬프트 끝에 "JSON Format:"을 명시하여 AI가 JSON으로 시작하도록 유도
+        prompt = f"{SYSTEM_PROMPT}\n\nUser: {user_question}\nOutput JSON:"
         response = model.generate_content(prompt)
-        generated_body = response.text.replace("```sparql", "").replace("```", "").strip()
+        raw_text = response.text.strip()
         
-        # ★ [핵심] 모든 네임스페이스 강제 주입 (AI 검색용)
+        sparql_query = ""
+
+        # 2. 결과 파싱 (JSON 추출 시도 -> 실패 시 텍스트 그대로 사용)
+        # 마크다운 제거 (```json, ```sparql 등)
+        clean_text = raw_text.replace("```json", "").replace("```sparql", "").replace("```", "").strip()
+        
+        try:
+            # JSON 파싱 시도
+            ai_data = json.loads(clean_text)
+            sparql_query = ai_data.get("sparql", "").strip()
+        except json.JSONDecodeError:
+            # JSON 파싱 실패 시, 혹시 AI가 그냥 쿼리만 줬을 경우를 대비해 원본 텍스트 사용
+            print("⚠️ JSON 파싱 실패, 원본 텍스트 사용 시도")
+            sparql_query = clean_text
+            
+        if not sparql_query:
+            return jsonify({"status": "error", "message": "AI가 쿼리를 생성하지 못했습니다."})
+
+        # 3. 최종 쿼리 조립 (Prefix 강제 주입 - 기존 로직 유지)
         final_sparql = f"""
         PREFIX kodv:    <https://knowledgemap.kr/kodv/def/>
         PREFIX kodvid:  <https://knowledgemap.kr/kodv/id/>
@@ -258,25 +273,26 @@ def ask_ai():
         PREFIX unit:    <http://qudt.org/vocab/unit/>
         PREFIX qk:      <http://qudt.org/vocab/quantitykind/>
         
-        {generated_body}
+        {sparql_query}
         """
         print(f"🤖 실행 쿼리:\n{final_sparql}")
 
-        # 3. 쿼리 실행
+        # 4. 쿼리 실행
+        sparql = SPARQLWrapper(BLAZEGRAPH_URL) # 전역 변수 사용
         sparql.setQuery(final_sparql)
         sparql.setReturnFormat(JSON)
         results = sparql.query().convert()
         
         return jsonify({
             "status": "success", 
-            "sparql": generated_body,
+            "sparql": sparql_query, # 파싱된 순수 쿼리만 반환
             "data": results['results']['bindings']
         })
 
     except Exception as e:
         print(f"AI Error: {e}")
         return jsonify({"status": "error", "message": str(e)})
-
+    
 # ★ [수정] 전문가 콘솔 실행 API
 @app.route('/api/sparql', methods=['POST'])
 def run_sparql_console():
