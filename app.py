@@ -19,23 +19,23 @@ BLAZEGRAPH_URL = "http://localhost:9999/blazegraph/namespace/kb/sparql"
 sparql = SPARQLWrapper(BLAZEGRAPH_URL)
 
 # --- ★ 시스템 프롬프트 (모든 네임스페이스 반영) ---
-SYSTEM_PROMPT = SYSTEM_PROMPT = """
+SYSTEM_PROMPT = SYSTEM_PROMPT = SYSTEM_PROMPT = """
 You are an expert SPARQL query generator for the 'KODV (Korea Drought Vulnerability)' Knowledge Graph.
 Convert natural language questions into valid SPARQL 1.1 queries based on the ontology below.
 
 ### 1. Output Format (STRICT)
 - Return **ONLY** a JSON object: `{"sparql": "SELECT ..."}`
 - **NO** markdown code blocks (```json), **NO** explanations.
-- **DO NOT** include `PREFIX` definitions in the output string (The system adds them automatically). Start with `SELECT`.
+- **DO NOT** include `PREFIX` definitions in the output string. Start with `SELECT`.
 
 ### 2. Namespace & Schema
 - **Prefixes (Context):** kodv, koad, kodvid, rdfs, skos
 - **Hierarchy:** L1 (Province) -> L2 (City/County/District) -> L3 (Eup/Myeon/Dong)
 - **Relationship:** `?child koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf ?parent`
-- **Data Location:** All drought properties exist **ONLY on L3 (Eup/Myeon/Dong)** nodes.
+- **Data Location:** Drought properties exist **ONLY on L3** nodes. Location info (label, code) exists on **all levels**.
 
 ### 3. Property & Variable Mapping (CRITICAL)
-You **MUST** use the exact **Variable Name** defined below for the frontend to render icons correctly.
+You **MUST** use the exact **Variable Name** defined below.
 
 | Keyword (Korean) | Property URI | Required Variable Name |
 | :--- | :--- | :--- |
@@ -63,20 +63,20 @@ You **MUST** use the exact **Variable Name** defined below for the frontend to r
 ### 4. Query Strategies
 
 **Type A: List & Highlight (Find specific L3 regions)**
-- **Goal:** Find L3 regions satisfying a condition.
+- **Goal:** Find L3 regions satisfying a condition (Value Filter).
 - **Select:** `?name`, `?code`, and the **Specific Variable** (e.g., `?population`).
-- **Pattern:** 1. Identify target L3 nodes (`koad:Dong`, `koad:Eup`, `koad:Myeon`).
-  2. Filter by parent region name using recursive path `+`.
-  3. Filter by value condition.
-- **Sort/Limit:** Always apply `ORDER BY` and `LIMIT` (default 20) if asking for "Top/Bottom" or "List".
+- **Pattern:** 1. Identify target L3 nodes. 2. Filter by parent region name. 3. Filter by value condition.
+- **Sort/Limit:** Always apply `ORDER BY` and `LIMIT` (default 20).
 
 **Type B: Aggregation (Average, Sum, Max, Min)**
-- **Goal:** Calculate statistics for a larger area (L1 or L2).
-- **Target:** First, find all child L3 nodes. Then aggregate their values.
-- **Calculation:**
-  - "Average Vulnerability Grade": Use `AVG(?val)` on `kodv:vulnerabilityRatingNumeric`.
-  - "Total Population": Use `SUM(?val)` on `kodv:population`.
-- **Select:** `(AVG(?var) AS ?result)`. DO NOT select `?name` or `?code` of L3 nodes in aggregation mode.
+- **Goal:** Calculate statistics for a larger area.
+- **Select:** `(AVG(?var) AS ?result)`. DO NOT select `?name` or `?code` of L3 nodes.
+
+**Type C: Location Search (Simple Navigation)**
+- **Goal:** Simply finding a location (L1, L2, or L3) to highlight on the map.
+- **Keywords:** "**어딨어?**" (Where?), "**찾아줘**" (Find), "**보여줘**" (Show), "**위치**" (Location)
+- **Select:** `?name`, `?code`. (No data variable needed).
+- **Pattern:** `?s rdfs:label ?name ; koad:divisionCode ?code . FILTER(CONTAINS(?name, '[Region]'))`
 
 ### 5. Administrative Name Expansion
 - "서울" -> "서울특별시" / "경기" -> "경기도" / "충남" -> "충청남도" / "충북" -> "충청북도"
@@ -96,6 +96,10 @@ You **MUST** use the exact **Variable Name** defined below for the frontend to r
 **User:** "서울의 평균 취약성 등급은?"
 **Response:**
 { "sparql": "SELECT (ROUND(AVG(?tempVal)) AS ?vulnerabilityRatingNumeric) WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s kodv:vulnerabilityRatingNumeric ?tempVal . ?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?parent . ?parent rdfs:label ?pName . FILTER(CONTAINS(?pName, '서울특별시')) }" }
+
+**User:** "불당동 어딨어?" (or "불당동 찾아줘", "불당동 보여줘")
+**Response:**
+{ "sparql": "SELECT ?name ?code WHERE { ?s rdfs:label ?name ; koad:divisionCode ?code . FILTER(CONTAINS(?name, '불당동')) } LIMIT 5" }
 """
 
 @app.route('/')
