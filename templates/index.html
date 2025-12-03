@@ -1212,17 +1212,25 @@ LIMIT 5</textarea>
                         }
                     }).addTo(map);
 
-                    // [수정] 줌 레벨 강제 제어 방식 (확실한 방법)
-                    // 1. 일단 해당 영역으로 이동 (애니메이션 없이 즉시 이동)
-                    map.fitBounds(window.highlightLayer.getBounds(), { animate: false });
+                    // [Smooth UX 최적화] 
+                    // 1. 목표 지점과 줌 레벨을 미리 계산합니다.
+                    var targetBounds = window.highlightLayer.getBounds();
+                    var targetCenter = targetBounds.getCenter();
 
-                    // 2. 이동 후 줌 레벨이 너무 가까우면(예: 12 이상) 강제로 11로 축소
-                    if (map.getZoom() > 11) {
-                        map.setZoom(11);
-                    }
+                    // 지도가 해당 영역을 보여주기 위해 필요한 줌 레벨을 계산 (여백 50px 포함)
+                    var targetZoom = map.getBoundsZoom(targetBounds, false, [50, 50]);
 
-                    // 3. 만약 부드러운 이동을 원하시면 위 1,2번 대신 아래 한 줄을 쓰세요 (maxZoom 옵션 재시도)
-                    // map.fitBounds(window.highlightLayer.getBounds(), { maxZoom: 11, padding: [50, 50], animate: true, duration: 1.0 });
+                    // 2. 줌 레벨 제한 (최대 11까지만 확대)
+                    if (targetZoom > 11) targetZoom = 11;
+
+                    // 3. 브라우저가 빨간색 영역을 그릴 시간을 0.1초 줍니다 (렉 방지 핵심!)
+                    setTimeout(() => {
+                        // 4. 구글어스처럼 부드럽게 날아갑니다 (FlyTo)
+                        map.flyTo(targetCenter, targetZoom, {
+                            duration: 1.5,       // 1.5초 동안 이동 (천천히)
+                            easeLinearity: 0.25  // 곡률 (작을수록 둥글게 날아감)
+                        });
+                    }, 100); // 100ms 대기
 
                 } else {
                     console.error("검색 결과 코드는 있는데, 지도에서 하나도 찾지 못했습니다.");
