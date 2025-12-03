@@ -98,6 +98,158 @@
         </div>
     </div>
 
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-database text-primary me-2"></i>사용 가능한 가뭄 데이터 목록
+                    (총 19종)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+
+                <div class="alert alert-primary m-3 border-0 small">
+                    <h6 class="fw-bold mb-2"><i class="fa-solid fa-circle-info me-2"></i>AI 의미 검색 활용 가이드</h6>
+
+                    <div class="mb-3">
+                        <strong>✅ 기능: 두 가지 방식으로 질문할 수 있습니다.</strong>
+                        <ul class="list-unstyled ps-2 mt-1 mb-0">
+                            <li class="mb-2">
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary me-1">지역
+                                    검색 (Highlight)</span>
+                                "충남에서 <strong>인구</strong>가 3만 명을 넘는 곳은?"<br>
+                                "전국에서 <strong>급수율</strong>이 낮은 지역 하위<strong> 20곳</strong>을 알려줘"
+                                <br><span class="text-muted ms-1" style="font-size: 0.9em;">→ 조건에 맞는 읍면동 지역을 지도에
+                                    표시합니다.</span>
+                            </li>
+                            <li>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success me-1">통계
+                                    조회 (Value)</span>
+                                "서울의 <strong>평균 취약성 등급</strong>은?"
+                                <br><span class="text-muted ms-1" style="font-size: 0.9em;">→ AI가 최하위 지역 데이터를 집계(평균, 합계
+                                    등)하여 값을 알려줍니다.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-0 pt-2 border-top border-primary border-opacity-25">
+                        <strong>⚠️ 질문 작성 팁 (정확한 분석을 위해 필수!)</strong>
+                        <ul class="mb-0 ps-3">
+                            <li class="mb-1">
+                                <strong>지역 범위와 개수 포함하기:</strong> 데이터 양이 많을 수 있으므로 <strong>"10 곳", "상위 30개"</strong> 처럼 개수를 제한하고 <strong>"~에서"</strong>라는
+                                범위를 명시해 주세요.
+                            </li>
+                            <li>
+                                <strong>정확한 명칭 사용:</strong> 아래 표의 <strong>'데이터 항목(굵은 글씨)'</strong> 이름을 포함해야 Ai가 <strong>RAG(Retrieval-Augmented
+                                    Generation)</strong>기반의 검색을 할 수 있습니다.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="table-responsive" style="max-height: 60vh;">
+                    <table class="table table-hover table-bordered mb-0 small table-custom">
+                        <thead class="table-light sticky-top">
+                            <tr class="text-center">
+                                <th style="width: 15%">분류</th>
+                                <th style="width: 35%">데이터 항목 (키워드)</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td rowspan="3" class="text-center bg-white fw-bold text-secondary">급수 인구 정보</td>
+                                <td><strong>인구</strong></td>
+                                <td>행정구역 내 거주 인구수</td>
+                            </tr>
+                            <tr>
+                                <td><strong>급수율</strong></td>
+                                <td>상수도 보급 비율 (%)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>급수인구</strong></td>
+                                <td>실제 상수도를 공급받는 인구</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="4" class="text-center bg-white fw-bold text-secondary">노출도</td>
+                                <td><strong>평균 가뭄 심도</strong></td>
+                                <td>기상학적 가뭄의 평균 심각도</td>
+                            </tr>
+                            <tr>
+                                <td><strong>가뭄 발생 빈도</strong></td>
+                                <td>과거 가뭄 발생 횟수</td>
+                            </tr>
+                            <tr>
+                                <td><strong>가뭄 노출도</strong></td>
+                                <td>심도와 빈도를 종합한 점수</td>
+                            </tr>
+                            <tr>
+                                <td><strong>노출도 계수</strong></td>
+                                <td>노출도 점수의 표준화 계수</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="4" class="text-center bg-white fw-bold text-secondary">민감도</td>
+                                <td><strong>생활용수 이용량</strong></td>
+                                <td>가정 등 일상생활 물 사용량</td>
+                            </tr>
+                            <tr>
+                                <td><strong>공업용수 이용량</strong></td>
+                                <td>산업/공장용 물 사용량</td>
+                            </tr>
+                            <tr>
+                                <td><strong>생·공용수 이용량</strong></td>
+                                <td>생활용수 + 공업용수 합계</td>
+                            </tr>
+                            <tr>
+                                <td><strong>민감도 계수</strong></td>
+                                <td>수요 기반 피해 가능성 계수</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="4" class="text-center bg-white fw-bold text-secondary">보조수원</td>
+                                <td><strong>저수지 유효 저수량</strong></td>
+                                <td>사용 가능한 저수지 물의 양</td>
+                            </tr>
+                            <tr>
+                                <td><strong>지하수 개발 가능량</strong></td>
+                                <td>이용 가능한 지하수 총량</td>
+                            </tr>
+                            <tr>
+                                <td><strong>보조수원 능력</strong></td>
+                                <td>비상시 물 공급 잠재력</td>
+                            </tr>
+                            <tr>
+                                <td><strong>보조수원 계수</strong></td>
+                                <td>보조수원 능력의 표준화 계수</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="2" class="text-center bg-white fw-bold text-secondary">대응 능력</td>
+                                <td><strong>용수공급 가능일수</strong></td>
+                                <td>물 공급 지속 가능 예상 일수</td>
+                            </tr>
+                            <tr>
+                                <td><strong>대응능력 계수</strong></td>
+                                <td>가뭄 대응 역량 표준화 계수</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="2" class="text-center bg-white fw-bold text-danger">취약성</td>
+                                <td><strong>취약성 점수</strong></td>
+                                <td>종합 가뭄 취약성 점수</td>
+                            </tr>
+                            <tr>
+                                <td><strong>취약성 등급</strong></td>
+                                <td>1(관심) ~ 5(매우심각) 등급</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
 <div class="modal fade" id="consoleModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
@@ -212,63 +364,485 @@ LIMIT 5</textarea>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr class="table-secondary"><td colspan="4" class="fw-bold ps-3">1. 행정구역 클래스 (koad)</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:SpecialMetropolitanCity</td><td>특별시</td><td>서울</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:MetropolitanCity</td><td>광역시</td><td>부산, 인천 등</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:SpecialSelfGoverningCity</td><td>특별자치시</td><td>세종</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:Province</td><td>도</td><td>경기, 강원 등</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:SpecialSelfGoverningProvince</td><td>특별자치도</td><td>제주, 강원</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:City</td><td>시</td><td>일반 시</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:County</td><td>군</td><td>군 지역</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:District</td><td>구 (자치구)</td><td>특별시/광역시 산하</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:AdministrativeCity</td><td>행정시</td><td>제주시, 서귀포시 등</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:NonAutonomousDistrict</td><td>구 (행정구)</td><td>수원 팔달구 등</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:Eup</td><td>읍</td><td>L3 행정구역</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:Myeon</td><td>면</td><td>L3 행정구역</td></tr>
-                                        <tr><td><span class="badge bg-primary">Class</span></td><td class="font-monospace text-primary">koad:Dong</td><td>동 (행정동)</td><td>L3 행정구역</td></tr>
-
-                                        <tr class="table-secondary"><td colspan="4" class="fw-bold ps-3">2. 행정구역 관계 (koad)</td></tr>
-                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesCity</td><td>시 포함</td><td>도 -> 시</td></tr>
-                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesCounty</td><td>군 포함</td><td>도 -> 군</td></tr>
-                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesDistrict</td><td>구 포함</td><td>시 -> 구</td></tr>
-                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesTown</td><td>읍 포함</td><td>시군 -> 읍</td></tr>
-                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesTownship</td><td>면 포함</td><td>시군 -> 면</td></tr>
-                                        <tr><td><span class="badge bg-success">Down</span></td><td class="font-monospace text-success">koad:includesNeighborhood</td><td>동 포함</td><td>시군구 -> 동</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isCityOf</td><td>~에 속한 시</td><td>시 -> 도 (역관계)</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isCountyOf</td><td>~에 속한 군</td><td>군 -> 도 (역관계)</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isDistrictOf</td><td>~에 속한 구</td><td>구 -> 시 (역관계)</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isTownOf</td><td>~에 속한 읍</td><td>읍 -> 시군 (역관계)</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isTownshipOf</td><td>~에 속한 면</td><td>면 -> 시군 (역관계)</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Up</span></td><td class="font-monospace text-dark">koad:isNeighborhoodOf</td><td>~에 속한 동</td><td>동 -> 시군구 (역관계)</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">koad:divisionCode</td><td>행정구역코드</td><td>Unique ID (String)</td></tr>
-
-                                        <tr class="table-secondary"><td colspan="4" class="fw-bold ps-3">3. 가뭄 데이터 속성 (kodv - L3 전용)</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:population</td><td>인구</td><td>거주 총 인구수</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:waterSupplyRate</td><td>급수율</td><td>상수도 보급률(%)</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:waterSupplyPopulation</td><td>급수인구</td><td>상수도 공급 인구</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:droughtSeverityAvg</td><td>평균 가뭄 심도</td><td>가뭄 심각도 (SPI)</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:droughtFrequency</td><td>가뭄 발생 빈도</td><td>발생 횟수 (Count)</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:droughtExposureScore</td><td>가뭄 노출도</td><td>종합 점수</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:exposureCoefficient</td><td>노출도 계수</td><td>표준화 계수</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:domesticWaterUsage</td><td>생활용수 이용량</td><td>가정용 사용량</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:industrialWaterUsage</td><td>공업용수 이용량</td><td>산업용 사용량</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:sensitivityCoefficient</td><td>민감도 계수</td><td>표준화 계수</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:reservoirCapacity</td><td>저수지 유효 저수량</td><td>천㎥ 단위</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:groundwaterAvailable</td><td>지하수 개발가능량</td><td>천㎥ 단위</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:livingIndustrialWaterUsage</td><td>생·공용수 이용량</td><td>생활+공업 합산</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:auxWaterSourceCapacity</td><td>보조수원능력</td><td>종합 능력</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:auxWaterSourceCoefficient</td><td>보조수원계수</td><td>표준화 계수</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:waterSupplyAvailableDays</td><td>용수공급 가능일수</td><td>지속 가능 일수</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:responseCapacityCoefficient</td><td>대응능력계수</td><td>표준화 계수</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:vulnerabilityScore</td><td>취약성 점수</td><td>최종 취약성 점수</td></tr>
-                                        <tr><td><span class="badge bg-info text-dark">Prop</span></td><td class="font-monospace text-dark">kodv:vulnerabilityRatingNumeric</td><td>취약성 등급 (숫자)</td><td>1~5 (비교/정렬용)</td></tr>
-
-                                        <tr class="table-secondary"><td colspan="4" class="fw-bold ps-3">4. 등급 식별자 (kodvid)</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_I</td><td>I 등급 (관심)</td><td>URI Resource</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_II</td><td>II 등급 (주의)</td><td>URI Resource</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_III</td><td>III 등급 (경계)</td><td>URI Resource</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_IV</td><td>IV 등급 (심각)</td><td>URI Resource</td></tr>
-                                        <tr><td><span class="badge bg-warning text-dark">Instance</span></td><td class="font-monospace">kodvid:Rating_V</td><td>V 등급 (매우심각)</td><td>URI Resource</td></tr>
+                                        <tr class="table-secondary">
+                                            <td colspan="4" class="fw-bold ps-3">1. 행정구역 표준 클래스 (koad)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:SpecialMetropolitanCity</td>
+                                            <td>특별시</td>
+                                            <td>서울</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:MetropolitanCity</td>
+                                            <td>광역시</td>
+                                            <td>부산, 인천 등</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:SpecialSelfGoverningCity</td>
+                                            <td>특별자치시</td>
+                                            <td>세종</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:Province</td>
+                                            <td>도</td>
+                                            <td>경기, 강원 등</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:SpecialSelfGoverningProvince</td>
+                                            <td>특별자치도</td>
+                                            <td>제주, 강원</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:AdministrativeCity</td>
+                                            <td>행정시</td>
+                                            <td>제주시, 서귀포시 등</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:SpecialCity</td>
+                                            <td>특례시</td>
+                                            <td>수원, 용인 등</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:City</td>
+                                            <td>시</td>
+                                            <td>일반 시</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:County</td>
+                                            <td>군</td>
+                                            <td>군 지역</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:District</td>
+                                            <td>구 (자치구)</td>
+                                            <td>특별시/광역시 산하</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:NonAutonomousDistrict</td>
+                                            <td>구 (행정구)</td>
+                                            <td>수원 팔달구 등</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:Eup</td>
+                                            <td>읍 (행정읍)</td>
+                                            <td>하위 행정구역</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:Myeon</td>
+                                            <td>면 (행정면)</td>
+                                            <td>하위 행정구역</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">koad:Dong</td>
+                                            <td>동 (행정동)</td>
+                                            <td>하위 행정구역</td>
+                                        </tr>
+                                        
+                                        <tr class="table-secondary">
+                                            <td colspan="4" class="fw-bold ps-3">2. 행정구역 데이터 속성 및 관계 (koad)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-secondary">Annotation</span></td>
+                                            <td class="font-monospace text-dark">rdfs:label</td>
+                                            <td>시도명/시군명/읍면동명</td>
+                                            <td>사람이 읽을 수 있는 명칭</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">koad:divisionCode</td>
+                                            <td>행정구역코드</td>
+                                            <td>Unique ID (String)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop (Up)</span></td>
+                                            <td class="font-monospace text-dark">koad:isCityOf</td>
+                                            <td>(관계) ~에 속한 시</td>
+                                            <td>기초 -> 광역 (역관계)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop (Up)</span></td>
+                                            <td class="font-monospace text-dark">koad:isCountyOf</td>
+                                            <td>(관계) ~에 속한 군</td>
+                                            <td>기초 -> 광역 (역관계)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop (Up)</span></td>
+                                            <td class="font-monospace text-dark">koad:isDistrictOf</td>
+                                            <td>(관계) ~에 속한 구</td>
+                                            <td>기초 -> 광역 (역관계)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop (Up)</span></td>
+                                            <td class="font-monospace text-dark">koad:isTownOf</td>
+                                            <td>(관계) ~에 속한 읍</td>
+                                            <td>하위 -> 기초 (역관계)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop (Up)</span></td>
+                                            <td class="font-monospace text-dark">koad:isTownshipOf</td>
+                                            <td>(관계) ~에 속한 면</td>
+                                            <td>하위 -> 기초 (역관계)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop (Up)</span></td>
+                                            <td class="font-monospace text-dark">koad:isNeighborhoodOf</td>
+                                            <td>(관계) ~에 속한 동</td>
+                                            <td>하위 -> 기초 (역관계)</td>
+                                        </tr>
+                                        
+                                        <tr class="table-secondary">
+                                            <td colspan="4" class="fw-bold ps-3">3. 가뭄 데이터 속성 (kodv - L3 전용)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:population</td>
+                                            <td>인구</td>
+                                            <td>거주 총 인구수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:waterSupplyRate</td>
+                                            <td>급수율</td>
+                                            <td>상수도 보급률(%)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:waterSupplyPopulation</td>
+                                            <td>급수인구</td>
+                                            <td>상수도 공급 인구</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:droughtSeverityAvg</td>
+                                            <td>평균가뭄심도</td>
+                                            <td>기상학적 가뭄지수(SPI) 평균</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:droughtFrequency</td>
+                                            <td>가뭄발생빈도</td>
+                                            <td>과거 가뭄 발생 횟수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:droughtExposureScore</td>
+                                            <td>가뭄노출도</td>
+                                            <td>심도+빈도 종합 점수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:exposureCoefficient</td>
+                                            <td>노출도계수</td>
+                                            <td>노출도 표준화 계수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:domesticWaterUsage</td>
+                                            <td>생활용수이용량</td>
+                                            <td>가정 등 일상생활 용수량</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:industrialWaterUsage</td>
+                                            <td>공업용수이용량</td>
+                                            <td>산업 생산 활동 용수량</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:sensitivityCoefficient</td>
+                                            <td>민감도 계수</td>
+                                            <td>피해 가능성 표준화 계수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:reservoirCapacity</td>
+                                            <td>저수지 유효저수량</td>
+                                            <td>관개/용수 공급 가능량</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:groundwaterAvailable</td>
+                                            <td>지하수 개발가능량</td>
+                                            <td>지속 이용 가능한 지하수량</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:domesticIndustrialWaterUsage</td>
+                                            <td>생·공용수 이용량</td>
+                                            <td>생활+공업 용수 합계</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:auxWaterSourceCapacity</td>
+                                            <td>보조수원능력</td>
+                                            <td>비상시 물 공급 잠재력</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:auxWaterSourceCoefficient</td>
+                                            <td>보조수원계수</td>
+                                            <td>보조수원능력 표준화 계수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:waterSupplyAvailableDays</td>
+                                            <td>용수공급 가능일수</td>
+                                            <td>가용 수자원 지속 일수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:responseCapacityCoefficient</td>
+                                            <td>대응능력계수</td>
+                                            <td>가뭄 대응 역량 표준화 계수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:vulnerabilityScore</td>
+                                            <td>취약성</td>
+                                            <td>최종 가뭄 취약성 점수</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:vulnerabilityRating</td>
+                                            <td>취약성등급 (URI)</td>
+                                            <td>I~V 등급 개념 연결</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info text-dark">Data Prop</span></td>
+                                            <td class="font-monospace text-dark">kodv:vulnerabilityRatingNumeric</td>
+                                            <td>취약성 등급 (숫자)</td>
+                                            <td>1~5 정수 (정렬/비교 쿼리용)</td>
+                                        </tr>
+                                        
+                                        <tr class="table-secondary">
+                                            <td colspan="4" class="fw-bold ps-3">4. SKOS 표준 어휘 (분류 체계 정의용)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">skos:Concept</td>
+                                            <td>개념 (Concept)</td>
+                                            <td>지식 분류의 개별 아이디어</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">skos:ConceptScheme</td>
+                                            <td>개념 분류 체계</td>
+                                            <td>개념들의 집합(스키마)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Class</span></td>
+                                            <td class="font-monospace text-primary">skos:OrderedCollection</td>
+                                            <td>순서있는 집합</td>
+                                            <td>순서가 정의된 개념 모음</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-secondary">Annotation</span></td>
+                                            <td class="font-monospace text-dark">skos:prefLabel</td>
+                                            <td>대표 이름</td>
+                                            <td>개념의 공식 명칭</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-secondary">Annotation</span></td>
+                                            <td class="font-monospace text-dark">skos:definition</td>
+                                            <td>개념 정의</td>
+                                            <td>개념의 뜻 풀이</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-secondary">Annotation</span></td>
+                                            <td class="font-monospace text-dark">skos:altLabel</td>
+                                            <td>대체 이름</td>
+                                            <td>동의어 또는 별칭</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">skos:hasTopConcept</td>
+                                            <td>(관계) 최상위 개념을 가짐</td>
+                                            <td>스키마와 최상위 개념 연결</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">skos:inScheme</td>
+                                            <td>(관계) 분류표에 속함</td>
+                                            <td>개념이 속한 스키마 명시</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">skos:memberList</td>
+                                            <td>(관계) 멤버 목록</td>
+                                            <td>컬렉션의 순서 정의 리스트</td>
+                                        </tr>
+                                        
+                                        <tr class="table-secondary">
+                                            <td colspan="4" class="fw-bold ps-3">5. KODV 온톨로지 분류 체계 (kodvid)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:droughtVulnerability</td>
+                                            <td>가뭄 지표 분류</td>
+                                            <td>Concept Scheme (전체 분류)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:WaterSupplyInfo</td>
+                                            <td>급수 인구 정보</td>
+                                            <td>Top Concept</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:Exposure</td>
+                                            <td>노출도 평가결과</td>
+                                            <td>Top Concept</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:Sensitivity</td>
+                                            <td>민감도 평가결과</td>
+                                            <td>Top Concept</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:AuxWaterSource</td>
+                                            <td>보조수원능력 평가결과</td>
+                                            <td>Top Concept</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:ResponseCapacity</td>
+                                            <td>가뭄대응능력 평가결과</td>
+                                            <td>Top Concept</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:Vulnerability</td>
+                                            <td>가뭄취약성 평가결과</td>
+                                            <td>Top Concept</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:RatingScale</td>
+                                            <td>취약성 등급 척도</td>
+                                            <td>Ordered Collection (5단계)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:Rating_I</td>
+                                            <td>I 등급 (관심)</td>
+                                            <td>Concept (취약성 등급)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:Rating_II</td>
+                                            <td>II 등급 (주의)</td>
+                                            <td>Concept (취약성 등급)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:Rating_III</td>
+                                            <td>III 등급 (경계)</td>
+                                            <td>Concept (취약성 등급)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:Rating_IV</td>
+                                            <td>IV 등급 (심각)</td>
+                                            <td>Concept (취약성 등급)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Instance</span></td>
+                                            <td class="font-monospace">kodvid:Rating_V</td>
+                                            <td>V 등급 (매우심각)</td>
+                                            <td>Concept (취약성 등급)</td>
+                                        </tr>
+                                        
+                                        <tr class="table-secondary">
+                                            <td colspan="4" class="fw-bold ps-3">6. 외부 표준 어휘 (Schema, DC, XSD, QUDT, OWL)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-secondary">Annotation</span></td>
+                                            <td class="font-monospace text-dark">schema:unitText</td>
+                                            <td>단위 텍스트</td>
+                                            <td>사람이 보는 단위 표시</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-secondary">Annotation</span></td>
+                                            <td class="font-monospace text-dark">dcterms:title</td>
+                                            <td>제목 (Title)</td>
+                                            <td>스키마 공식 명칭</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-secondary">Annotation</span></td>
+                                            <td class="font-monospace text-dark">dcterms:description</td>
+                                            <td>설명 (Description)</td>
+                                            <td>상세 설명</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">dcterms:subject</td>
+                                            <td>주제 (Subject)</td>
+                                            <td>속성과 개념 연결</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-secondary">Annotation</span></td>
+                                            <td class="font-monospace text-dark">rdfs:comment</td>
+                                            <td>주석 (Comment)</td>
+                                            <td>부가 설명</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">rdfs:range</td>
+                                            <td>값의 범위 (Range)</td>
+                                            <td>속성 값의 타입 정의</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-danger">Datatype</span></td>
+                                            <td class="font-monospace text-dark">xsd:string</td>
+                                            <td>(타입) 문자열</td>
+                                            <td>Text 형식 값</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-danger">Datatype</span></td>
+                                            <td class="font-monospace text-dark">xsd:integer</td>
+                                            <td>(타입) 정수</td>
+                                            <td>소수점 없는 숫자</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-danger">Datatype</span></td>
+                                            <td class="font-monospace text-dark">xsd:decimal</td>
+                                            <td>(타입) 실수</td>
+                                            <td>소수점 포함 숫자</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">qudt:hasQuantityKind</td>
+                                            <td>물리량 종류</td>
+                                            <td>데이터의 물리적 차원</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">qudt:unit</td>
+                                            <td>측정 단위</td>
+                                            <td>데이터의 단위 연결</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-warning text-dark">Obj Prop</span></td>
+                                            <td class="font-monospace text-dark">owl:sameAs</td>
+                                            <td>동일 개체</td>
+                                            <td>다른 URI와 동일함 명시</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
