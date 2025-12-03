@@ -271,4 +271,12 @@ def run_sparql_console():
         return jsonify({"status": "error", "message": str(e)})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=80)
+    # 윈도우(nt)인지 리눅스(posix)인지 확인
+    if os.name == 'nt': 
+        # [로컬 윈도우] 개발 모드: 디버그 켜고, 80번 포트 
+        print("💻 로컬(Windows) 환경에서 실행합니다.")
+        app.run(host='0.0.0.0', debug=True, port=80) 
+    else:
+        # [Azure 리눅스] 배포 모드: 디버그 끄고, 5000번 포트 
+        print("☁️ 서버(Linux) 환경에서 실행합니다.")
+        app.run(host='0.0.0.0', debug=False, port=5000)
