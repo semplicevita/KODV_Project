@@ -988,6 +988,7 @@ LIMIT 5</textarea>
                 // [6. 취약성]
                 'vulnerabilityScore': { label: '취약성점수', unit: '점', icon: 'fa-triangle-exclamation', color: 'danger' },
                 'vulnerabilityRating': { label: '등급', unit: '', icon: 'fa-layer-group', color: 'danger' },
+                'vulnerabilityRatingNumeric': { label: '등급(수치)', unit: '급', icon: 'fa-layer-group', color: 'danger' },
 
                 // [기타]
                 'val': { label: '값', unit: '', icon: 'fa-check', color: 'secondary' },
@@ -1359,18 +1360,32 @@ LIMIT 5</textarea>
             var code = item.code ? item.code.value : "";
             if (code) codes.push(code);
 
-            // 2. 속성 배지 생성
             var badgesHtml = "";
-            Object.keys(item).forEach(function (key) {
-                // 시각화에서 제외할 메타데이터들
-                if (['name', 'region', 'label', 'code', 'geometry', 'geom'].includes(key)) return;
 
+            // 2. 속성 배지 생성 (for문 안쪽)
+            Object.keys(item).forEach(function(key) {
+                if (['name', 'region', 'label', 'code', 'geometry', 'geom'].includes(key)) return;
+                
                 var val = item[key].value;
                 // ?val 처럼 일반 변수명이 오면 '값'으로 표시되지만, app.py 수정 후엔 정상 작동함
                 var mapInfo = ATTR_MAP[key] || { label: key, unit: '', icon: 'fa-tag', color: 'secondary' };
 
-                if (!isNaN(val) && val.length > 0) {
-                    if (val.indexOf('.') !== -1) val = parseFloat(val).toFixed(2);
+                // ★ [추가] 만약 속성이 '등급(숫자)'라면, 사람이 보기 좋은 텍스트로 변환!
+                if (key === 'vulnerabilityRatingNumeric') {
+                    // 소수점(평균 등)일 경우 반올림
+                    var numVal = Math.round(Number(val));
+                    var gradeMap = { 1: "I (관심)", 2: "II (주의)", 3: "III (경계)", 4: "IV (심각)", 5: "V (매우심각)" };
+                    
+                    if (gradeMap[numVal]) {
+                        val = gradeMap[numVal]; // "3" -> "III (경계)" 로 교체
+                        mapInfo.unit = "";      // "급" 단위 제거
+                        mapInfo.label = "예상등급"; // 라벨 변경 (선택사항)
+                    }
+                }
+                // ----------------------------------------------------
+
+                if (!isNaN(val) && val.length > 0 && key !== 'vulnerabilityRatingNumeric') { // 위에서 변환된 문자열은 제외
+                    if(val.indexOf('.') !== -1) val = parseFloat(val).toFixed(2); 
                     val = Number(val).toLocaleString();
                 }
 
