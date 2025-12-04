@@ -89,6 +89,10 @@ You **MUST** use the exact **Variable Name** defined below.
 **Response:**
 { "sparql": "SELECT ?name ?code ?population WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s rdfs:label ?name ; koad:divisionCode ?code ; kodv:population ?population . ?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?parent . ?parent rdfs:label ?pName . FILTER(CONTAINS(?pName, '충청남도') && ?population > 30000) } ORDER BY DESC(?population) LIMIT 30" }
 
+**User:** "제주도에서 취약성 등급이 4등급인 곳?" (Grade Filtering)
+**Response:**
+{ "sparql": "SELECT ?name ?code ?vulnerabilityRatingNumeric WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s rdfs:label ?name ; koad:divisionCode ?code ; kodv:vulnerabilityRatingNumeric ?vulnerabilityRatingNumeric . ?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?parent . ?parent rdfs:label ?pName . FILTER(CONTAINS(?pName, '제주특별자치도') && ?vulnerabilityRatingNumeric = 4) } ORDER BY ?name LIMIT 20" }
+
 **User:** "전국에서 급수율이 낮은 지역 하위 20곳을 알려줘"
 **Response:**
 { "sparql": "SELECT ?name ?code ?waterSupplyRate WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s rdfs:label ?name ; koad:divisionCode ?code ; kodv:waterSupplyRate ?waterSupplyRate . } ORDER BY ASC(?waterSupplyRate) LIMIT 20" }
