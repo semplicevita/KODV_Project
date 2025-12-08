@@ -24,6 +24,7 @@
 #################################################################
 
 kodvid:DroughtVulnerabilityScheme a skos:ConceptScheme ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/aa64a178-1970-4dca-87e1-c66deffd440e"^^xsd:anyURI ;
     dcterms:title "가뭄 지표 분류"@ko ;
     dcterms:description "대한민국 행정구역의 가뭄 취약성을 평가하기 위해 정의된 표준 지표 분류 체계입니다. 기상학적 요소, 물 수급 현황, 대응 능력 등을 종합하여 6개의 상위 개념과 20개의 세부 속성으로 구성됩니다."@ko ;
     skos:hasTopConcept kodvid:WaterSupplyInfo,
@@ -36,31 +37,37 @@ kodvid:DroughtVulnerabilityScheme a skos:ConceptScheme ;
 # --- 상위 개념 (Top Concepts) ---
 
 kodvid:WaterSupplyInfo a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/147bf397-ada9-4163-999d-002484a29faa"^^xsd:anyURI ;
     skos:prefLabel "급수 인구 정보"@ko ;
     skos:definition "가뭄 취약성 산정의 기초가 되는 행정구역별 인구 및 급수 현황 정보"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:Exposure a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/ac2ab21f-c9c7-40ea-9341-1c07719ae734"^^xsd:anyURI ;
     skos:prefLabel "노출도 평가결과"@ko ;
     skos:definition "기상학적 가뭄의 심도 및 발생 빈도 등 가뭄 발생의 외부적 요인을 평가한 결과"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:Sensitivity a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/7ee57935-765d-4f04-bfdf-a97439d01f09"^^xsd:anyURI ;
     skos:prefLabel "민감도 평가결과"@ko ;
     skos:definition "생활용수 및 공업용수 수요 등 물 부족에 영향을 미치는 수급 불균형 요인을 평가한 결과"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:AuxWaterSource a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/84d8cd15-9b5a-4b3e-b5bb-3fdad866eb88"^^xsd:anyURI ;
     skos:prefLabel "보조수원능력 평가결과"@ko ;
     skos:definition "저수지 및 지하수 등 비상시 활용 가능한 대체 수자원의 확보 상태를 평가한 결과"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:ResponseCapacity a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/03d74009-97ef-4c50-9a34-1f7381d72914"^^xsd:anyURI ;
     skos:prefLabel "가뭄대응능력 평가결과"@ko ;
     skos:definition "가뭄 발생 시 용수 공급 가능 일수 등 지자체의 대응 능력을 평가한 결과"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:Vulnerability a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/1def193b-9228-4a6a-a037-0c37ecd8a4aa"^^xsd:anyURI ;
     skos:prefLabel "가뭄취약성 평가결과"@ko ;
     skos:definition "노출도, 민감도, 보조수원능력, 대응능력을 종합하여 산출한 최종 가뭄 취약 정도"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
@@ -264,9 +271,9 @@ kodv:vulnerabilityRating a owl:ObjectProperty ;
 #################################################################
 
 kodvid:RatingScale a skos:OrderedCollection ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/624d21a4-74da-4403-889e-df14e7ab10e5"^^xsd:anyURI ;
     skos:prefLabel "가뭄 취약성 등급 척도"@ko ;
     skos:definition "가뭄 취약성 정도를 나타내는 5단계 등급 체계"@ko ;
-    skos:inScheme kodvid:DroughtVulnerabilityScheme ;
     skos:memberList ( kodvid:Rating_I
                       kodvid:Rating_II
                       kodvid:Rating_III
@@ -274,30 +281,35 @@ kodvid:RatingScale a skos:OrderedCollection ;
                       kodvid:Rating_V ) .
 
 kodvid:Rating_I a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/7f72d64b-5765-452d-92a0-28bf91c00908"^^xsd:anyURI ;
     skos:prefLabel "I 등급"@ko ;
     skos:altLabel "관심"@ko ;
     skos:definition "가뭄 징후가 약하게 나타나 지속적인 관찰이 필요한 단계"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:Rating_II a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/64d2dd47-ecbb-4279-8e6e-6720f08a458a"^^xsd:anyURI ;
     skos:prefLabel "II 등급"@ko ;
     skos:altLabel "주의"@ko ;
     skos:definition "가뭄 징후가 뚜렷하여 용수 확보에 대한 주의가 필요한 단계"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:Rating_III a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/f22a61a7-2a48-4b29-900b-bd2d96c6a706"^^xsd:anyURI ;
     skos:prefLabel "III 등급"@ko ;
     skos:altLabel "경계"@ko ;
     skos:definition "국지적인 물 부족이 발생하여 제한 급수 등의 조치가 고려되는 단계"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:Rating_IV a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/b721e0b9-fc0f-4f59-93a1-6bb683ec5c84"^^xsd:anyURI ;
     skos:prefLabel "IV 등급"@ko ;
     skos:altLabel "심각"@ko ;
     skos:definition "광범위한 물 부족이 발생하여 적극적인 비상 급수 대책이 필요한 단계"@ko ;
     skos:inScheme kodvid:DroughtVulnerabilityScheme .
 
 kodvid:Rating_V a skos:Concept ;
+    dcterms:identifier "https://knowledgemap.kr/kodv/id/11eed5a2-1a88-439b-833a-45a7a179e87c"^^xsd:anyURI ;
     skos:prefLabel "V 등급"@ko ;
     skos:altLabel "매우심각"@ko ;
     skos:definition "극심한 물 부족으로 인해 재난 수준의 대응이 요구되는 단계"@ko ;
