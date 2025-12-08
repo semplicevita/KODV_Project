@@ -1,8 +1,48 @@
 body { margin: 0; padding: 0; overflow: hidden; font-family: 'Pretendard', sans-serif; }
         #map { height: 100vh; width: 100%; z-index: 1; background: #eaebef; }
         
-        .search-container { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90%; max-width: 650px; display: flex; gap: 10px; }
-        .search-box { flex-grow: 1; }
+/* 검색 컨테이너 */
+.search-container {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    
+    width: 95%; 
+    max-width: 765px; /* [수정 1] 700px -> 765px (예시문 공간 확보) */
+    
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px; 
+}
+
+/* 좌우 그룹: 버튼 2개가 딱 들어가는 최소 크기(128px)로 고정 */
+.left-group, .right-group {
+    flex: 0 0 128px; /* [수정 2] 140px -> 128px (불필요한 여백 제거) */
+    display: flex;
+    align-items: center;
+}
+
+/* 왼쪽 그룹: 오른쪽 끝으로 정렬 (검색창에 붙이기) */
+.left-group {
+    justify-content: flex-end; 
+}
+
+/* 오른쪽 그룹: 왼쪽 끝으로 정렬 (검색창에 붙이기) */
+.right-group {
+    justify-content: flex-start;
+    gap: 10px; 
+}
+
+/* 검색 박스 */
+.search-box {
+    flex-grow: 1; 
+    border: 1px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.9);
+}
         
         #ai-result-panel {
             position: absolute; top: 100px; right: 20px; z-index: 1000;

@@ -24,23 +24,27 @@
     <div id="zoom-badge"><i class="fa-solid fa-layer-group me-2"></i><span id="level-name">광역 (시도)</span></div>
 
     <div class="search-container">
+        <div class="left-group">
+            <button class="btn btn-light shadow-lg rounded-circle" style="width: 58px; height: 58px;" onclick="showHelpModal()" title="사용 가능한 데이터 목록">
+                <i class="fa-solid fa-circle-question fa-xl text-secondary"></i>
+            </button>
+        </div>
+
         <div class="input-group shadow-lg rounded-pill overflow-hidden search-box">
             <span class="input-group-text bg-white border-0 ps-4"><i class="fa-solid fa-robot text-primary"></i></span>
             <input type="text" class="form-control border-0 p-3" placeholder="예: 전북에서 생활용수 이용량이 가장 많은 곳은?" id="searchInput" onkeypress="handleEnter(event)">
             <button class="btn btn-primary px-4 fw-bold" onclick="askAI()">검색</button>
         </div>
         
-        <button class="btn btn-light shadow-lg rounded-circle" style="width: 58px; height: 58px;" onclick="showHelpModal()" title="사용 가능한 데이터 목록">
-            <i class="fa-solid fa-circle-question fa-xl text-secondary"></i>
-        </button>
-
-        <button class="btn btn-success shadow-lg rounded-circle" style="width: 58px; height: 58px;" onclick="openEasyQuery()" title="초보자용 SPARQL 콘솔">
-            <i class="fa-solid fa-magic fa-xl text-white"></i>
-        </button>
-        
-        <button class="btn btn-dark shadow-lg rounded-circle" style="width: 58px; height: 58px;" onclick="showConsoleModal()" title="전문가용 SPARQL 콘솔">
-            <i class="fa-solid fa-terminal fa-xl text-white"></i>
-        </button>
+        <div class="right-group">
+            <button class="btn btn-success shadow-lg rounded-circle" style="width: 58px; height: 58px;" onclick="openEasyQuery()" title="데이터 탐색기 (초보자용)">
+                <i class="fa-solid fa-magic fa-xl text-white"></i>
+            </button>
+            
+            <button class="btn btn-dark shadow-lg rounded-circle" style="width: 58px; height: 58px;" onclick="showConsoleModal()" title="전문가용 SPARQL 콘솔">
+                <i class="fa-solid fa-terminal fa-xl text-white"></i>
+            </button>
+        </div>
     </div>
 
     <div id="ai-result-panel">
