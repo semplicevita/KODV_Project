@@ -1630,7 +1630,7 @@ LIMIT 5</textarea>
         document.getElementById('eq-preview').innerText = fullQuery;
     }
 
-    // 실행 (기존 전문가용 API 재활용)
+    // 실행 (기존 전문가용 API 재활용 + 쿼리 보기 연동 수정)
     function runEasyQuery() {
         var query = document.getElementById('eq-preview').innerText;
         var modalEl = document.getElementById('easyQueryModal');
@@ -1638,14 +1638,14 @@ LIMIT 5</textarea>
         
         modal.hide(); // 모달 닫기
         
-        // 검색 결과창 열기 UI (기존 로직 활용)
+        // 검색 결과창 열기 UI
         $('#ai-result-panel').show(); 
         $('#ai-content').html('<div class="text-center p-3"><div class="spinner-border text-success" role="status"></div><div class="mt-2 text-muted">데이터 조회 중...</div></div>');
         
         // 하이라이트 초기화
         if(window.highlightLayer) map.removeLayer(window.highlightLayer);
 
-        // API 호출 (/api/sparql 사용)
+        // API 호출
         $.ajax({
             url: '/api/sparql',
             type: 'POST',
@@ -1653,8 +1653,10 @@ LIMIT 5</textarea>
             data: JSON.stringify({ query: query }),
             success: function(res) {
                 if (res.status === 'success') {
-                    // ★ 핵심: 우리가 만든 예쁜 결과창 함수(displayAIResults) 재사용!
-                    // 전문가 API 결과 포맷(res.data)이 displayAIResults 입력 포맷과 호환됨
+                    // ★ [핵심 수정] 실행한 쿼리를 전역 변수(lastSparql)에 저장해야 버튼이 작동함!
+                    lastSparql = query; 
+                    
+                    // 결과 표시
                     displayAIResults(res.data);
                 } else {
                     alert("오류 발생: " + res.message);
