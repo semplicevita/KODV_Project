@@ -1239,142 +1239,133 @@ LIMIT 5</textarea>
             });
         }
 
-    // [수정 v2] GeoJSON 경로 복구 및 속성 매칭 수정
+    // [Fix] 검색 결과 표시 함수 (통계 카드 + 동적 지도 로딩 + getProps 통합)
     function displayAIResults(data) {
-        var html = '<div class="list-group list-group-flush">';
         var codes = [];
 
+        // 1. 결과 없음 처리
         if (!data || data.length === 0) {
             $('#ai-content').html('<div class="text-center text-muted p-3">결과가 없습니다.</div>');
             $('#ai-result-panel').show();
+            // 기존 하이라이트 삭제
+            if (window.highlightLayer) map.removeLayer(window.highlightLayer);
             return;
         }
 
-        // [수정] 디버깅 로그가 추가된 지도 하이라이트 로직
-        if (codes.length > 0) {
-            if (window.highlightLayer) {
-                map.removeLayer(window.highlightLayer);
-            }
-
-            $.getJSON("/static/emd.geojson", function (geoData) {
-                var filtered = { type: "FeatureCollection", features: [] };
-
-                // 매칭된 코드들을 추적하기 위한 집합
-                var matchedCodes = new Set();
-
-                filtered.features = geoData.features.filter(f => {
-                    // GeoJSON의 코드 (여기서 adm_cd2 인지 adm_cd 인지 확인 중요)
-                    var geoCode = String(f.properties.adm_cd2 || f.properties.adm_cd || "");
-
-                    if (codes.includes(geoCode)) {
-                        matchedCodes.add(geoCode); // 매칭 성공 기록
-                        return true;
-                    }
-                    return false;
-                });
-
-                // [디버깅] 매칭 실패한 지역 콘솔에 경고 출력
-                codes.forEach(c => {
-                    if (!matchedCodes.has(c)) {
-                        console.warn(`⚠️ 매칭 실패: 검색결과 코드 [${c}]가 GeoJSON 지도 파일에 없습니다.`);
-                        console.log(`   -> 힌트: GeoJSON의 코드는 8자리인데 검색결과는 10자리일 수 있습니다.`);
-                    }
-                });
-
-                if (filtered.features.length > 0) {
-                    window.highlightLayer = L.geoJson(filtered, {
-                        style: { color: "#dc3545", weight: 3, fillColor: "#dc3545", fillOpacity: 0.4 },
-                        onEachFeature: function (feature, layer) {
-                            layer.regionCode = String(feature.properties.adm_cd2 || feature.properties.adm_cd);
-                            if (feature.properties.emd_kor_nm) {
-                                layer.bindTooltip(feature.properties.emd_kor_nm);
-                            }
-                        }
-                    }).addTo(map);
-
-                    // [수정] 여기도 maxZoom 적용 (전체 뷰 잡을 때도 너무 확대되지 않게)
-                    map.fitBounds(window.highlightLayer.getBounds(), { maxZoom: 11 });
-                } else {
-                    console.error("검색 결과 코드는 있는데, 지도에서 하나도 찾지 못했습니다. (코드 포맷 확인 필요)");
-                }
-            }).fail(function () {
-                console.log("GeoJSON 로드 실패");
-            });
-        }
-
-        data.forEach(function (item, index) {
-            // 1. 이름 및 코드 추출
-            // name이 없으면 region, label 순으로 찾음
-            var name = item.name ? item.name.value : (item.region ? item.region.value : (item.label ? item.label.value : "지역명 없음"));
-            var code = item.code ? item.code.value : "";
-            if (code) codes.push(code);
-
-            var badgesHtml = "";
-
-            // 2. 속성 배지 생성 (for문 안쪽)
-            Object.keys(item).forEach(function(key) {
-                if (['name', 'region', 'label', 'code', 'geometry', 'geom'].includes(key)) return;
-                
-                var val = item[key].value;
-                // ?val 처럼 일반 변수명이 오면 '값'으로 표시되지만, app.py 수정 후엔 정상 작동함
-                var mapInfo = ATTR_MAP[key] || { label: key, unit: '', icon: 'fa-tag', color: 'secondary' };
-
-                // ★ [추가] 만약 속성이 '등급(숫자)'라면, 사람이 보기 좋은 텍스트로 변환!
-                if (key === 'vulnerabilityRatingNumeric') {
-                    // 소수점(평균 등)일 경우 반올림
-                    var numVal = Math.round(Number(val));
-                    var gradeMap = { 1: "I (관심)", 2: "II (주의)", 3: "III (경계)", 4: "IV (심각)", 5: "V (매우심각)" };
-                    
-                    if (gradeMap[numVal]) {
-                        val = gradeMap[numVal]; // "3" -> "III (경계)" 로 교체
-                        mapInfo.unit = "";      // "급" 단위 제거
-                        mapInfo.label = "예상등급"; // 라벨 변경 (선택사항)
-                    }
-                }
-                // ----------------------------------------------------
-
-                if (!isNaN(val) && val.length > 0 && key !== 'vulnerabilityRatingNumeric') { // 위에서 변환된 문자열은 제외
-                    if(val.indexOf('.') !== -1) val = parseFloat(val).toFixed(2); 
-                    val = Number(val).toLocaleString();
-                }
-
-                badgesHtml += `
-                    <span class="badge bg-${mapInfo.color} bg-opacity-10 text-${mapInfo.color} border border-${mapInfo.color} me-1 mb-1">
-                        <i class="fa-solid ${mapInfo.icon} me-1"></i>${mapInfo.label}: ${val}${mapInfo.unit}
-                    </span>`;
-            });
-
-            // 3. 리스트 아이템 생성
-            // onclick에서 문자열 따옴표 처리를 위해 escape 주의
-            html += `
-                <a href="#" class="list-group-item list-group-item-action py-3" onclick="moveToRegion('${code}'); return false;">
-                    <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                        <h6 class="mb-0 fw-bold text-dark">
-                            <i class="fa-solid fa-location-dot text-danger me-2"></i>${name}
-                        </h6>
-                        <small class="text-muted font-monospace">${code}</small>
-                    </div>
-                    <div class="mt-1">
-                        ${badgesHtml}
-                    </div>
-                </a>
-            `;
+        // 코드 수집 (지도 하이라이트용)
+        data.forEach(item => {
+            if (item.code) codes.push(item.code.value);
         });
 
-        html += '</div>';
+        // ★ [UI 분기] 결과가 1개이고 계산된 값(통계)이라면 -> '통계 카드' 모드
+        // (단순 조회인지, 통계 계산인지 구분하기 위해 메타 데이터 키를 제외한 속성이 있는지 확인)
+        var keys = Object.keys(data[0]).filter(k => !['name', 'region', 'label', 'code', 'geometry', 'geom'].includes(k));
+        var isCalculation = (data.length === 1 && keys.length > 0);
 
-        // SPARQL 보기 버튼
-        html += `
-            <div class="p-3 border-top bg-light">
-                <button class="btn btn-sm btn-outline-secondary w-100" onclick="showSparqlModal()">
-                    <i class="fa-solid fa-code me-1"></i>생성된 SPARQL 보기
-                </button>
-            </div>`;
+        var html = "";
+
+        if (isCalculation) {
+            // [Type B UI] 통계 카드 스타일
+            var item = data[0];
+            var name = item.name ? item.name.value : "전체 지역";
+            var code = item.code ? item.code.value : "";
+            
+            // 값 추출 (첫 번째 유효한 키 사용)
+            var key = keys[0]; 
+            var val = item[key].value;
+            var mapInfo = ATTR_MAP[key] || { label: '결과값', unit: '', icon: 'fa-calculator', color: 'primary' };
+
+            // 등급 변환 로직
+            var displayVal = val;
+            var displayLabel = mapInfo.label;
+            
+            if (key === 'vulnerabilityRatingNumeric') {
+                var numVal = Math.round(Number(val));
+                var gradeMap = { 1: "I (관심)", 2: "II (주의)", 3: "III (경계)", 4: "IV (심각)", 5: "V (매우심각)" };
+                if (gradeMap[numVal]) {
+                    displayVal = gradeMap[numVal];
+                    mapInfo.unit = "";
+                    displayLabel = "평균 등급"; // 라벨 변경
+                }
+            } else if (!isNaN(val)) {
+                if(val.indexOf('.') !== -1) val = parseFloat(val).toFixed(2);
+                displayVal = Number(val).toLocaleString();
+            }
+
+            html = `
+                <div class="p-4 text-center bg-white rounded-3 border shadow-sm">
+                    <h5 class="text-secondary fw-bold mb-3"><i class="fa-solid fa-chart-pie me-2"></i>분석 결과</h5>
+                    <h3 class="fw-bold text-dark mb-1">${name}</h3>
+                    <p class="text-muted small font-monospace mb-4">${code}</p>
+                    
+                    <div class="d-inline-block bg-${mapInfo.color} bg-opacity-10 rounded-pill px-4 py-2 mb-3">
+                        <span class="text-${mapInfo.color} fw-bold">
+                            <i class="fa-solid ${mapInfo.icon} me-2"></i>${displayLabel}
+                        </span>
+                    </div>
+                    
+                    <h1 class="display-4 fw-bold text-${mapInfo.color} mb-2">${displayVal}<span class="fs-4 ms-2 text-muted">${mapInfo.unit}</span></h1>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="showSparqlModal()">
+                        <i class="fa-solid fa-code me-1"></i>생성된 SPARQL 보기
+                    </button>
+                </div>
+            `;
+
+        } else {
+            // [Type A/C UI] 기존 리스트 스타일 (여러 개 결과)
+            html = '<div class="list-group list-group-flush">';
+            data.forEach(function(item) {
+                var name = item.name ? item.name.value : (item.region ? item.region.value : "지역명 없음");
+                var code = item.code ? item.code.value : "";
+                
+                var badgesHtml = "";
+                Object.keys(item).forEach(function(key) {
+                    if (['name', 'region', 'label', 'code', 'geometry', 'geom'].includes(key)) return;
+                    
+                    var val = item[key].value;
+                    var mapInfo = ATTR_MAP[key] || { label: key, unit: '', icon: 'fa-tag', color: 'secondary' };
+
+                    // 등급 변환 로직 (리스트용)
+                    if (key === 'vulnerabilityRatingNumeric') {
+                        var numVal = Math.round(Number(val));
+                        var gradeMap = { 1: "I (관심)", 2: "II (주의)", 3: "III (경계)", 4: "IV (심각)", 5: "V (매우심각)" };
+                        if (gradeMap[numVal]) {
+                            val = gradeMap[numVal];
+                            mapInfo.unit = "";
+                            mapInfo.label = "등급";
+                        }
+                    } else if (!isNaN(val) && val.length > 0) {
+                        if(val.indexOf('.') !== -1) val = parseFloat(val).toFixed(2); 
+                        val = Number(val).toLocaleString();
+                    }
+
+                    badgesHtml += `
+                        <span class="badge bg-${mapInfo.color} bg-opacity-10 text-${mapInfo.color} border border-${mapInfo.color} me-1 mb-1">
+                            <i class="fa-solid ${mapInfo.icon} me-1"></i>${mapInfo.label}: ${val}${mapInfo.unit}
+                        </span>`;
+                });
+
+                html += `
+                    <a href="#" class="list-group-item list-group-item-action py-3" onclick="moveToRegion('${code}'); return false;">
+                        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0 fw-bold text-dark">
+                                <i class="fa-solid fa-location-dot text-danger me-2"></i>${name}
+                            </h6>
+                            <small class="text-muted font-monospace">${code}</small>
+                        </div>
+                        <div class="mt-1">${badgesHtml}</div>
+                    </a>`;
+            });
+            html += '</div>';
+            html += `<div class="p-3 border-top bg-light"><button class="btn btn-sm btn-outline-secondary w-100" onclick="showSparqlModal()"><i class="fa-solid fa-code me-1"></i>생성된 SPARQL 보기</button></div>`;
+        }
 
         $('#ai-content').html(html);
         $('#ai-result-panel').show();
 
-        // 4. [수정] 지도 하이라이트 로직 (동적 로딩 + getProps 활용)
+        // 4. 지도 하이라이트 (사용자님 원본 + 동적 로딩 + getProps 통합)
         if (codes.length > 0) {
             if (window.highlightLayer) {
                 map.removeLayer(window.highlightLayer);
@@ -1384,7 +1375,7 @@ LIMIT 5</textarea>
             var firstCode = codes[0];
             var targetGeoJson = "";
 
-            // 시도(2자리) -> sido.json / 시군구(5자리) -> sig.json / 읍면동(기타) -> emd.geojson
+            // 동적 경로 선택
             if (firstCode.length === 2) {
                 targetGeoJson = "/static/sido.json";
             } else if (firstCode.length === 5) {
@@ -1393,50 +1384,41 @@ LIMIT 5</textarea>
                 targetGeoJson = "/static/emd.geojson";
             }
 
-            // 선택된 GeoJSON 파일 로딩
-            $.getJSON(targetGeoJson, function (geoData) {
+            $.getJSON(targetGeoJson, function(geoData) {
                 var filtered = { type: "FeatureCollection", features: [] };
-
+                
                 filtered.features = geoData.features.filter(f => {
-                    // ★ 핵심: getProps 함수를 사용하여 안전하게 코드 추출
-                    var props = getProps(f);
-                    var c = String(props.code);
-                    return codes.includes(c);
+                    var props = getProps(f); 
+                    return codes.includes(String(props.code));
                 });
 
                 if (filtered.features.length > 0) {
                     window.highlightLayer = L.geoJson(filtered, {
                         style: { color: "#dc3545", weight: 3, fillColor: "#dc3545", fillOpacity: 0.4 },
-                        onEachFeature: function (feature, layer) {
-                            // 여기도 getProps 사용 (클릭 이동을 위한 코드 심기)
+                        onEachFeature: function(feature, layer) {
                             var props = getProps(feature);
                             layer.regionCode = String(props.code);
-
-                            // 툴팁
-                            if (props.name) {
-                                layer.bindTooltip(props.name);
-                            }
+                            if(props.name) layer.bindTooltip(props.name);
                         }
                     }).addTo(map);
-
-                    // [Smooth UX 최적화] 이동 및 줌
+                    
                     var targetBounds = window.highlightLayer.getBounds();
                     var targetCenter = targetBounds.getCenter();
 
                     // 레벨별 적정 줌 제한 (시도는 멀리, 읍면동은 가까이)
                     var maxZoomLimit = (firstCode.length === 2) ? 8 : (firstCode.length === 5) ? 9 : 11;
-
+                    
                     var targetZoom = map.getBoundsZoom(targetBounds, false, [50, 50]);
                     if (targetZoom > maxZoomLimit) targetZoom = maxZoomLimit;
 
                     setTimeout(() => {
-                        map.flyTo(targetCenter, targetZoom, { duration: 1.5, easeLinearity: 0.25 });
+                        map.flyTo(targetBounds.getCenter(), targetZoom, { duration: 1.5, easeLinearity: 0.25 });
                     }, 100);
 
                 } else {
                     console.error("매칭 실패: " + targetGeoJson + " 에서 코드를 찾지 못했습니다.");
                 }
-            }).fail(function () {
+            }).fail(function(){
                 console.log("GeoJSON 로드 실패: " + targetGeoJson + " 경로를 확인하세요.");
             });
         }
