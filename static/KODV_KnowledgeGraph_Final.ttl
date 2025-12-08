@@ -274,6 +274,7 @@ kodvid:RatingScale a skos:OrderedCollection ;
     dcterms:identifier "https://knowledgemap.kr/kodv/id/624d21a4-74da-4403-889e-df14e7ab10e5"^^xsd:anyURI ;
     skos:prefLabel "가뭄 취약성 등급 척도"@ko ;
     skos:definition "가뭄 취약성 정도를 나타내는 5단계 등급 체계"@ko ;
+    skos:inScheme kodvid:DroughtVulnerabilityScheme .
     skos:memberList ( kodvid:Rating_I
                       kodvid:Rating_II
                       kodvid:Rating_III
