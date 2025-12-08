@@ -89,6 +89,6 @@ KODV_Project/
 본 프로젝트에 사용된 지리 정보 및 가뭄 통계 데이터의 출처는 다음과 같습니다.
 * 대한민국 시도, 시군구 행정구역 경계 (JSON) : https://oioirang.tistory.com/108 
 * 대한민국 읍면동 행정구역 경계 (GeoJSON) : https://github.com/vuski/admdongkor
-* 한국수자원공사_국가가뭄정보포털 : https://www.data.go.kr/data/15072842/fileData.do
+* 국가가뭄정보포털 : https://www.data.go.kr/data/15072842/fileData.do](https://www.drought.go.kr/menu/m30/m37.do
 * 한국수자원공사_행정구역 제원정보 : https://www.data.go.kr/data/15049842/fileData.do , 
 * 한국수자원공사_행정구역 코드정보 : https://www.data.go.kr/data/15049843/fileData.do
