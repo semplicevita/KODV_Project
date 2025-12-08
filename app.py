@@ -63,14 +63,18 @@ You **MUST** use the exact **Variable Name** defined below.
 ### 4. Query Strategies
 
 **Type A: List & Highlight (Find specific L3 regions)**
-- **Goal:** Find L3 regions satisfying a condition (Value Filter).
+- **Goal:** Find L3 regions satisfying a condition.
 - **Select:** `?name`, `?code`, and the **Specific Variable** (e.g., `?population`).
 - **Pattern:** 1. Identify target L3 nodes. 2. Filter by parent region name. 3. Filter by value condition.
 - **Sort/Limit:** Always apply `ORDER BY` and `LIMIT` (default 20).
 
 **Type B: Aggregation (Average, Sum, Max, Min)**
-- **Goal:** Calculate statistics for a larger area.
-- **Select:** `(AVG(?var) AS ?result)`. DO NOT select `?name` or `?code` of L3 nodes.
+- **Goal:** Calculate statistics for a larger area (L1 or L2).
+- **Pattern:** 1. Identify child L3 nodes (`?s`). 2. Find the parent node (`?parent`). 3. Filter by parent name.
+- **Select (CRITICAL):**
+  - Select Parent Name: `(SAMPLE(?pName) AS ?name)`
+  - Select Parent Code: `(SAMPLE(?pCode) AS ?code)`
+  - Select Aggregated Value: Alias as the **Exact Property Variable** (e.g., `AVG(?val) AS ?population`).
 
 **Type C: Location Search (Simple Navigation)**
 - **Goal:** Simply finding a location (L1, L2, or L3) to highlight on the map.
@@ -97,9 +101,9 @@ You **MUST** use the exact **Variable Name** defined below.
 **Response:**
 { "sparql": "SELECT ?name ?code ?waterSupplyRate WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s rdfs:label ?name ; koad:divisionCode ?code ; kodv:waterSupplyRate ?waterSupplyRate . } ORDER BY ASC(?waterSupplyRate) LIMIT 20" }
 
-**User:** "서울의 평균 취약성 등급은?"
+**User:** "서울의 평균 취약성 등급은?" (Aggregation)
 **Response:**
-{ "sparql": "SELECT (ROUND(AVG(?tempVal)) AS ?vulnerabilityRatingNumeric) WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s kodv:vulnerabilityRatingNumeric ?tempVal . ?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?parent . ?parent rdfs:label ?pName . FILTER(CONTAINS(?pName, '서울특별시')) }" }
+{ "sparql": "SELECT (SAMPLE(?pName) AS ?name) (SAMPLE(?pCode) AS ?code) (ROUND(AVG(?tempVal)) AS ?vulnerabilityRatingNumeric) WHERE { ?s a ?type . VALUES ?type { koad:Dong koad:Eup koad:Myeon } . ?s kodv:vulnerabilityRatingNumeric ?tempVal . ?s (koad:isNeighborhoodOf|koad:isTownOf|koad:isTownshipOf|koad:isDistrictOf|koad:isCityOf|koad:isCountyOf)+ ?parent . ?parent rdfs:label ?pName ; koad:divisionCode ?pCode . FILTER(CONTAINS(?pName, '서울특별시')) }" }
 
 **User:** "불당동 어딨어?" (or "불당동 찾아줘", "불당동 보여줘")
 **Response:**
